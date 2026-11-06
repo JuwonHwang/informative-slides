@@ -139,14 +139,22 @@ def main():
                 f.rename(hist / f"{stamp}.{ext}")
         done.unlink()
         archived = str(hist)
+    pathlib.Path(f"{base}-feedback.sent").unlink(missing_ok=True)
 
     rel = deck.relative_to(pathlib.Path(state["root"]))
     url = f"http://localhost:{state['port']}/__review/" + urllib.parse.quote(str(rel))
-    if "--no-browser" not in args:
+    # 열린 검수 화면이 있으면 그 화면이 새 덱·새 회차로 내용을 바꾼다. 없을 때만 브라우저 탭을 연다.
+    req = urllib.request.Request(f"http://127.0.0.1:{state['port']}/__open", method="POST",
+                                 data=json.dumps({"deck": str(rel)}).encode(), headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=5) as r:
+        opened = json.loads(r.read())
+    switched = bool(opened.get("connected"))
+    if not switched and "--no-browser" not in args:
         webbrowser.open(url)
     print(json.dumps({"url": url, "port": state["port"], "root": state["root"],
                       "feedback": f"{base}-feedback.md", "done": f"{base}-feedback.done",
-                      "archived_previous_round": archived}, ensure_ascii=False))
+                      "archived_previous_round": archived,
+                      "shown_in": "existing review tab" if switched else "new browser tab"}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

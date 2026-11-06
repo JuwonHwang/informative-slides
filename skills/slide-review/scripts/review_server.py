@@ -22,6 +22,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import urllib.parse
 
 args = [a for a in sys.argv[1:] if not a.startswith("--")]
@@ -34,6 +36,42 @@ FONT_CSS = "".join(
     f'src:url(/__font/Pretendard-{n}.woff2) format("woff2")}}'
     for w, n in [(400, "Regular"), (500, "Medium"), (600, "SemiBold"), (700, "Bold"), (800, "ExtraBold")])
 PORT = int(sys.argv[sys.argv.index("--port") + 1]) if "--port" in sys.argv else 8765
+
+
+# 수명: 열린 검수 화면이 30초마다 /__heartbeat를 보낸다. 열린 화면이 없는 상태가 CLOSED_LIMIT초,
+# 또는 사용자 조작이 없는 상태가 IDLE_LIMIT초 이어지면 서버가 종료한다. 검수 완료를 받으면 바로 종료한다.
+CLOSED_LIMIT = int(os.environ.get("REVIEW_CLOSED_LIMIT", 600))
+IDLE_LIMIT = int(os.environ.get("REVIEW_IDLE_LIMIT", 3600))
+START = time.time()
+LAST_SEEN = START      # 마지막 heartbeat
+LAST_ACTIVE = START    # 마지막 사용자 조작(클릭, 키, 의견 입력, 저장)
+SERVER = None
+# 검수 완료 뒤에는 의견을 받지 않고 HTML·PDF 저장만 처리한다. 화면이 닫히면 FINISHED_CLOSED초, 조작이 없으면 FINISHED_IDLE초 뒤 종료한다.
+FINISHED = False
+# 검수 화면 하나를 계속 쓴다: review.py open이 /__open으로 열 덱을 바꾸면, 열린 화면이 heartbeat 응답에서 덱과 회차를 받아 다시 연다.
+TARGET = None   # 루트 기준 덱 경로
+ROUND = 0       # /__open마다 1 증가
+FINISHED_CLOSED = int(os.environ.get("REVIEW_FINISHED_CLOSED", 60))
+FINISHED_IDLE = int(os.environ.get("REVIEW_FINISHED_IDLE", 600))
+
+
+def shutdown_later(delay=1.0):
+    threading.Timer(delay, lambda: SERVER and SERVER.shutdown()).start()
+
+
+def watchdog():
+    while True:
+        time.sleep(15)
+        now = time.time()
+        if FINISHED and (now - LAST_SEEN > FINISHED_CLOSED or now - LAST_ACTIVE > FINISHED_IDLE):
+            sys.stderr.write("review finished and screen closed or idle; stopping\n")
+            return shutdown_later(0)
+        if now - LAST_SEEN > CLOSED_LIMIT:
+            sys.stderr.write(f"no open review screen for {CLOSED_LIMIT}s; stopping\n")
+            return shutdown_later(0)
+        if now - LAST_ACTIVE > IDLE_LIMIT:
+            sys.stderr.write(f"no activity for {IDLE_LIMIT}s; stopping\n")
+            return shutdown_later(0)
 
 
 def find_chrome():
@@ -84,9 +122,26 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
+        global LAST_SEEN, LAST_ACTIVE
         if self.path == "/__ping":
             return self._reply(200)
+        if self.path.startswith("/__heartbeat"):
+            LAST_SEEN = time.time()
+            if "active=1" in self.path:
+                LAST_ACTIVE = LAST_SEEN
+            body = json.dumps({"target": TARGET, "round": ROUND, "finished": FINISHED}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(body)
+            return None
+        if self.path.startswith("/__mtime/"):
+            f = (ROOT / urllib.parse.unquote(urllib.parse.urlparse(self.path).path[len("/__mtime/"):])).resolve()
+            if ROOT not in f.parents or not f.is_file():
+                return self._reply(404, b"0")
+            return self._reply(200, str(f.stat().st_mtime).encode())
         if self.path.startswith("/__pdf/"):
+            LAST_ACTIVE = time.time()
             return self._pdf()
         if self.path.startswith("/__font/"):
             f = (FONTS / pathlib.Path(urllib.parse.unquote(self.path[len("/__font/"):])).name)
@@ -183,23 +238,52 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         return None
 
     def do_POST(self):
+        """action: save (입력 중 저장), send (피드백 보내기: 지금까지의 의견을 기록 폴더로 옮기고 .sent를 만든다),
+        done (검수 완료: send와 같이 옮기고 .done을 만든 뒤 서버를 종료한다)."""
+        global LAST_ACTIVE, FINISHED, TARGET, ROUND
+        if self.path == "/__open":
+            data = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
+            rel = urllib.parse.unquote(data.get("deck", "")).lstrip("/")
+            deck = (ROOT / rel).resolve()
+            if ROOT not in deck.parents or not deck.exists():
+                return self._reply(400, b"bad deck path")
+            TARGET, ROUND, FINISHED = rel, ROUND + 1, False
+            LAST_ACTIVE = time.time()
+            connected = time.time() - LAST_SEEN < 10
+            body = json.dumps({"round": ROUND, "connected": connected}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(body)
+            return None
         if self.path != "/__feedback":
             return self._reply(404, b"not found")
+        if FINISHED:
+            return self._reply(409, "검수가 끝나 의견을 받지 않는다".encode())
         data = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
         rel = urllib.parse.unquote(data.get("deck", "")).lstrip("/")
         deck = (ROOT / rel).resolve()
         if ROOT not in deck.parents or deck.suffix not in (".html", ".htm") or not deck.exists():
             return self._reply(400, b"bad deck path")
+        LAST_ACTIVE = time.time()
+        action = data.get("action") or ("done" if data.get("done") else "save")
         base = deck.with_suffix("")
-        pathlib.Path(f"{base}-feedback.md").write_text(data.get("markdown", ""), encoding="utf-8")
-        pathlib.Path(f"{base}-feedback.json").write_text(
-            json.dumps(data.get("json", {}), ensure_ascii=False, indent=2), encoding="utf-8")
-        done = pathlib.Path(f"{base}-feedback.done")
-        if data.get("done"):
-            done.write_text("done\n", encoding="utf-8")
-        elif done.exists():
-            done.unlink()
-        return self._reply(200)
+        md, js = pathlib.Path(f"{base}-feedback.md"), pathlib.Path(f"{base}-feedback.json")
+        md.write_text(data.get("markdown", ""), encoding="utf-8")
+        js.write_text(json.dumps(data.get("json", {}), ensure_ascii=False, indent=2), encoding="utf-8")
+        if action == "save":
+            return self._reply(200)
+        hist = pathlib.Path(f"{base}-feedback-history")
+        hist.mkdir(exist_ok=True)
+        stamp = time.strftime("%Y%m%d-%H%M%S")
+        sent_md = hist / f"{stamp}.md"
+        md.rename(sent_md)
+        js.rename(hist / f"{stamp}.json")
+        signal = pathlib.Path(f"{base}-feedback.{'done' if action == 'done' else 'sent'}")
+        signal.write_text(str(sent_md) + "\n", encoding="utf-8")
+        if action == "done":
+            FINISHED = True
+        return self._reply(200, str(sent_md).encode())
 
     def log_message(self, fmt, *a):
         msg = fmt % a
@@ -228,4 +312,6 @@ if __name__ == "__main__":
         threading.Timer(0.5, webbrowser.open, [url]).start()
         print(f"review page: {url}")
     sys.stdout.flush()
+    SERVER = server
+    threading.Thread(target=watchdog, daemon=True).start()
     server.serve_forever()

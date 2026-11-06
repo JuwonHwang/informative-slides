@@ -24,7 +24,8 @@ button{font:inherit;cursor:pointer}
 .dl{padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:13px;text-decoration:none;cursor:pointer}
 .dl:hover{background:var(--soft)}
 .done{padding:7px 16px;border:0;border-radius:8px;background:var(--good);color:#fff;font-weight:700}
-.done[disabled]{opacity:.5;cursor:default}
+.done[disabled],.send[disabled]{opacity:.5;cursor:default}
+.send{padding:7px 14px;border:1px solid var(--good);border-radius:8px;background:#fff;color:var(--good);font-weight:700}
 /* main */
 .main{display:grid;grid-template-columns:1fr 380px;min-height:0}
 .stage{position:relative;display:grid;place-items:center;padding:20px;min-width:0;min-height:0;overflow:auto}
@@ -56,6 +57,10 @@ ol.items .x{border:0;background:none;color:#94A3B8}
 .slides button.has{border-color:var(--accent);color:var(--accent);font-weight:700}
 .slides button.cur{background:var(--ink);border-color:var(--ink);color:#fff}
 .err{padding:24px;color:#B91C1C}
+/* 검수 완료 뒤: 조작을 막고 안내 문구만 남긴다 */
+body.finished .stage{pointer-events:none;opacity:.6}
+body.finished .pick,body.finished .items,body.finished .note,body.finished .slides{opacity:.4;pointer-events:none}
+.finished-note{padding:12px 14px;border-radius:8px;background:#ECFDF5;border:1px solid #6EE7B7;color:#065F46;font-weight:700;line-height:1.5}
 </style>
 </head>
 <body>
@@ -73,7 +78,8 @@ ol.items .x{border:0;background:none;color:#94A3B8}
   <span class="status"></span>
   <button class="dl html" title="덱 HTML 파일을 저장한다. 저장 위치를 고른다">HTML 저장</button>
   <button class="dl pdf" title="지금 보는 언어, 고른 비율과 가로 길이로 장마다 한 쪽인 PDF를 저장한다. 저장 위치를 고른다">PDF 저장</button>
-  <button class="done">검수 완료</button>
+  <button class="send" title="검수를 이어 가면서 지금까지의 의견을 에이전트에게 보낸다">피드백 보내기</button>
+  <button class="done" title="남은 의견을 보내고 검수를 끝낸다. 검수 서버가 종료된다">검수 완료</button>
 </div>
 <div class="main">
   <div class="stage"><iframe class="deck" title="슬라이드"></iframe></div>
@@ -156,12 +162,35 @@ ol.items .x{border:0;background:none;color:#94A3B8}
     });
     return out;
   };
-  const push = (done) => fetch('/__feedback', {
+  // action: save(입력 중 저장), send(피드백 보내기), done(검수 완료: 보내고 서버 종료)
+  const push = (action) => fetch('/__feedback', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ deck: deckPath, markdown: md(), json: { title: doc && doc.title, slides: slides.map(titleOf), feedback: db }, done: !!done }),
-  }).then((r) => { $('.status').textContent = r.ok ? (done ? '검수 완료 전달됨' : '저장됨') : '저장 실패'; return r.ok; })
-    .catch(() => { $('.status').textContent = '저장 실패: 서버 연결 없음'; return false; });
-  const save = () => { $('.status').textContent = '저장 중'; $('.done').disabled = false; clearTimeout(saveT); saveT = setTimeout(() => push(false), 400); };
+    body: JSON.stringify({ deck: deckPath, action, markdown: md(), json: { title: doc && doc.title, slides: slides.map(titleOf), feedback: db } }),
+  }).then((r) => {
+    $('.status').textContent = !r.ok ? '저장 실패' : action === 'send' ? '피드백을 보냈다. 반영되면 덱을 다시 불러온다' : action === 'done' ? '' : '저장됨';
+    return r.ok;
+  }).catch(() => { $('.status').textContent = '저장 실패: 서버 연결 없음'; return false; });
+  const save = () => { $('.status').textContent = '저장 중'; clearTimeout(saveT); saveT = setTimeout(() => push('save'), 400); activity(); };
+
+  // ---- 수명: 열려 있는 동안 30초마다 신호, 사용자 조작은 30초에 한 번까지 알린다 (서버는 화면이 닫히거나 오래 조작이 없으면 종료한다)
+  // 2초마다 서버에 신호를 보내고, 서버가 알려 주는 덱·회차가 바뀌면(review.py open) 이 탭에서 새 덱을 연다
+  let lastActive = 0, myRound = null;
+  const beat = (active) => fetch('/__heartbeat' + (active ? '?active=1' : ''), { cache: 'no-store' }).then((r) => r.json()).then((st) => {
+    if (myRound === null) { myRound = st.round; return; }
+    if (st.target && st.round !== myRound) location.replace('/__review/' + st.target.split('/').map(encodeURIComponent).join('/'));
+  }).catch(() => {});
+  const activity = () => { const n = Date.now(); if (n - lastActive > 30000) { lastActive = n; beat(true); } };
+  setInterval(() => beat(false), 2000);
+  beat(true);
+  ['click', 'keydown', 'input'].forEach((t) => addEventListener(t, activity, true));
+
+  // ---- 덱 파일이 바뀌면(에이전트가 피드백을 반영하면) 보던 장에서 다시 불러온다
+  let deckMtime = null;
+  setInterval(() => fetch('/__mtime' + deckPath, { cache: 'no-store' }).then((r) => r.ok ? r.text() : null).then((m) => {
+    if (!m) return;
+    if (deckMtime && m !== deckMtime) { const at = cur; frame.src = '/__render' + deckPath + '#' + (at + 1); $('.status').textContent = '덱이 바뀌어 다시 불러왔다'; }
+    deckMtime = m;
+  }).catch(() => {}), 3000);
 
   // ---- layout: ratio, display size, PDF width (applied to the screen and the PDF only; the deck file is not changed)
   let deckRatio = '16:9';
@@ -304,7 +333,7 @@ ol.items .x{border:0;background:none;color:#94A3B8}
   };
 
   const tick = () => {
-    if (!doc || !slides.length) return;
+    if (!doc || !slides.length || document.body.classList.contains('finished')) return;
     const k = visible();
     if (k !== cur) {
       cur = k; sel = null; hover = null;
@@ -351,6 +380,7 @@ ol.items .x{border:0;background:none;color:#94A3B8}
       renderPick();
     }, true);
     doc.addEventListener('keydown', (e) => { if (e.key === 'Escape') { sel = null; renderPick(); } }, true);
+    ['click', 'keydown'].forEach((t) => doc.addEventListener(t, activity, true));
     cur = -1;
   };
 
@@ -391,7 +421,25 @@ ol.items .x{border:0;background:none;color:#94A3B8}
     }), 'PDF 만드는 중');
   };
 
-  $('.done').onclick = () => { clearTimeout(saveT); push(true).then((ok) => { if (ok) $('.done').disabled = true; }); };
+  $('.send').onclick = () => { clearTimeout(saveT); push('send').then((ok) => { if (ok) { db = {}; cur = -1; } }); };
+  // 검수 완료: 의견을 보내고 서버가 종료된다. 화면의 모든 조작을 막고 안내 문구만 남긴다.
+  $('.done').onclick = () => { clearTimeout(saveT); push('done').then((ok) => {
+    if (!ok) return;
+    document.body.classList.add('finished');
+    db = {}; sel = hover = null;
+    $('.selmode').checked = false;
+    if (doc) doc.documentElement.classList.remove('rv-sel');
+    // HTML·PDF 저장과 PDF 설정(비율, PDF 가로)만 남기고 나머지 조작을 막는다
+    const keep = '.dl, .ratio, .pw, .pwc';
+    document.querySelectorAll('button, input, select, textarea').forEach((el) => { if (!el.matches(keep)) el.disabled = true; });
+    document.body.classList.add('finished');
+    $('.status').textContent = '';
+    const note = document.createElement('div');
+    note.className = 'finished-note';
+    note.textContent = '검수를 마쳤다. 의견을 보냈다. HTML·PDF 저장은 이 탭을 닫기 전까지 쓸 수 있다. 탭을 닫으면 검수 서버가 종료된다.';
+    $('.panel').prepend(note);
+    layer.innerHTML = '';
+  }); };
 })();
 </script>
 </body>
