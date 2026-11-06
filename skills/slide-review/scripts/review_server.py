@@ -208,10 +208,24 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    # 지정한 포트가 사용 중이면(다른 프로그램, 이전 서버) 다음 빈 포트를 쓴다. 사용 중인 포트에 연결하면 다른 서버의 화면이 열린다.
+    server = None
+    for port in range(PORT, PORT + 50):
+        try:
+            server = http.server.ThreadingHTTPServer(("127.0.0.1", port), Handler)
+            break
+        except OSError:
+            continue
+    if server is None:
+        sys.exit(f"no free port in {PORT}-{PORT + 49}")
+    if port != PORT:
+        print(f"port {PORT} is in use; using {port}")
+    PORT = port
     print(f"serving {ROOT} at http://localhost:{PORT}/")
     if "--open" in sys.argv:
         import threading, webbrowser
         url = f"http://localhost:{PORT}/__review/" + urllib.parse.quote(sys.argv[sys.argv.index("--open") + 1].lstrip("/"))
         threading.Timer(0.5, webbrowser.open, [url]).start()
         print(f"review page: {url}")
-    http.server.ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
+    sys.stdout.flush()
+    server.serve_forever()

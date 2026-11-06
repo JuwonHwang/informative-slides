@@ -6,3 +6,4 @@ __pycache__/
 *-feedback.json
 *-feedback.done
 preview/
+*-feedback-history/

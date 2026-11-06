@@ -150,7 +150,16 @@ def browser_overflow(path):
         if not m:
             return None, "browser check produced no result; open the deck with ?check in a browser instead"
         if m.group(1) != "none":
-            res += [(int(x), lang) for x in m.group(1).split(",")]
+            res += [(int(x), lang, "content overflows the slide; split the slide or shorten text") for x in m.group(1).split(",")]
+        d = re.search(r'data-diagram="([^"]*)"', out)
+        if d and d.group(1) not in ("none", ""):
+            import html as _html
+            names = {"text-out": "text outside its box", "text-overlap": "texts overlap", "label-on-box": "label overlaps another box",
+                     "edge-cross": "arrow crosses a box it does not connect", "out-of-figure": "element outside the figure"}
+            for item in _html.unescape(d.group(1)).split(";"):
+                parts = item.split("|", 2)
+                if len(parts) == 3 and parts[0].isdigit():
+                    res.append((int(parts[0]), lang, f'diagram: {names.get(parts[1], parts[1])}: "{parts[2]}"'))
     return res, None
 
 
@@ -242,14 +251,20 @@ def main():
         # 원칙 3: 의인화. 사람이 아닌 대상이 말하거나 보여 주는 것처럼 쓴 표현
         for pm in sorted(set(re.findall(r"((?:말해|보여|알려|증명해)\s?(?:준다|주는|주고|주며|줌)|이야기한다|알아서)", full))):
             issues.append(("WARN", i, f'personification "{pm}"; write what actually happens or who does it'))
+        if re.search(r"결론\s*\d|결론\s*[:：]|결론 요약", full):
+            issues.append(("WARN", i, 'the word "결론" used as a label; name the content instead (요약 항목은 번호만)'))
         for ph in PLACEHOLDER.findall(full):
             issues.append(("INFO", i, f"placeholder to fill: {ph}"))
 
     layouts = [t[1] for t in titles]
     if layouts[0] != "cover":
         issues.append(("WARN", 1, 'first slide is not the cover (class="slide cover")'))
-    if len(slides) > 3 and "summary" not in layouts[1:3]:
-        issues.append(("WARN", 2, 'no data-layout="summary" slide near the start'))
+    if len(slides) > 3 and (len(layouts) < 2 or layouts[1] != "project"):
+        issues.append(("WARN", 2, 'slide 2 is not data-layout="project"; introduce the project before the summary'))
+    if len(slides) > 3 and "summary" not in layouts[1:4]:
+        issues.append(("WARN", 3, 'no data-layout="summary" slide after the project introduction'))
+    if "project" in layouts and "summary" in layouts and layouts.index("summary") < layouts.index("project"):
+        issues.append(("WARN", layouts.index("summary") + 1, "summary comes before the project introduction"))
     if layouts[-1] != "closing":
         issues.append(("WARN", len(slides), 'last slide is not data-layout="closing"'))
 
@@ -276,8 +291,8 @@ def main():
         over, note = browser_overflow(path)
         if over is None:
             issues.append(("INFO", 0, note))
-        for i, lang in over or []:
-            issues.append(("ERROR", i, f"content overflows the slide ({lang}); split the slide or shorten text"))
+        for i, lang, msg in over or []:
+            issues.append(("ERROR", i, f"{msg} ({lang})"))
 
     print(f"Deck: {path}  ({len(slides)} slides)\n")
     print("Titles in order (read these alone: they should state the whole argument):")

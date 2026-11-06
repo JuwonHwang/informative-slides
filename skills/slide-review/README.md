@@ -13,7 +13,8 @@ HTML 슬라이드 덱을 검수 화면에 띄워 요소별 의견을 받는 에�
 ## 직접 실행
 
 ```bash
-python3 skills/slide-review/scripts/review_server.py <덱 폴더> --open <덱.html>
+python3 skills/slide-review/scripts/review.py open <덱.html>   # 빈 로컬 포트에 검수 화면을 띄우고 브라우저로 연다
+python3 skills/slide-review/scripts/review.py stop             # 검수 서버를 내린다
 ```
 
 - 요소를 클릭해 의견을 단다. 같은 요소를 다시 클릭하면 상위 블록이 선택된다.
