@@ -1,6 +1,6 @@
 {
   "name": "informative-slides",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "발표자 없이 읽어도 이해되는 한국어·영어 HTML 슬라이드 작성(informative-slides)과 요소별 검수 화면(slide-review)",
   "author": {
     "name": "JuwonHwang"

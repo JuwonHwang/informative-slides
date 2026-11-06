@@ -19,7 +19,10 @@
 수준 구조도로 그리고, 한 부분을 설명할 때는 확대 상세도와 전체 구조 속 위치를 함께 보인다. 처리 순서를
 따라가는 구조도와 근거를 하나씩 더하는 불릿은 단계로 나눠 `→`를 누를 때마다 하나씩 보이고, PDF에서는
 단계마다 한 쪽이 된다. 모든 글자는 한국어와 영어로 쓰고 `L` 키로 전환한다. 화면 비율은 덱의
-`<html data-ratio="16:9">`에서 정한다. 슬라이드 규칙은
+`<html data-ratio="16:9">`에서 정한다. 표지에는 소속(로고), 프로젝트 이름과 한 줄 설명, 프로젝트의 어느 부분을 다루는지
+밝힌 제목을 두고, 표지와 마무리 장 왼쪽에 프로젝트 색 띠를 둔다. 발표자·소속·팀·로고는
+`~/.config/informative-slides/profile.json`에 처음 한 번만 저장해 모든 프로젝트에서 쓰고, 프로젝트 이름·한 줄 설명·색은
+프로젝트 폴더의 `slides/identity.json`에 저장해 같은 프로젝트의 덱이 모두 같게 한다. 슬라이드 규칙은
 [drive-project-forward](https://github.com/JuwonHwang/drive-project-forward)의 `slides/RULES.md`를 기반으로 한다.
 
 ## 구성
@@ -28,7 +31,8 @@
 informative-slides/
 ├── SKILL.md                # 에이전트가 따르는 절차와 규칙
 ├── assets/template.html    # 슬라이드 골격: 구조도·확대도, 단계, 한영 전환, 화면 비율, 인쇄, 넘침 확인
-└── scripts/check_deck.py   # 제목·메시지·분량·출처·약어·기호·한영·넘침 검사
+├── scripts/check_deck.py   # 제목·메시지·분량·출처·약어·기호·한영·넘침 검사
+└── scripts/project_identity.py # 사용자 프로필(소속·로고)과 프로젝트 이름·설명·색 읽기·저장
 ```
 
 ## 설치
@@ -101,4 +105,5 @@ python3 skills/informative-slides/scripts/check_deck.py slides/deck.html
 - 출처 없는 수치: WARN
 - 쉬운 이름 없이 쓴 약어·지표 기호·모델 이름(장마다 확인): WARN
 - 내용 이름 없이 쓴 원자료 기호(`B안`, `시나리오 C`), 장 밖을 가리키는 지시어(`해당`, `위의`, `전자`): WARN
-- 표지·요약·마무리 누락, 요약의 리캡 누락, `<html data-ratio>` 누락: WARN
+- 의인화 표현(`말해 준다`, `보여 준다`, `알아서` 등): WARN
+- 표지·요약·마무리 누락, 요약의 리캡 누락, `<html data-ratio>` 누락, 프로젝트 색·이름·한 줄 설명 누락: WARN

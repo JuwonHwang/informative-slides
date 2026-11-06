@@ -239,6 +239,9 @@ def main():
         demo = re.findall(r"(?:^|\s)(해당|위의|앞서|전자|후자|이것|그것|이 방식|그 방식|이 문제|그 문제|이 안|그 안)(?=\s|$|[,.)])", full)
         for d in sorted(set(demo)):
             issues.append(("WARN", i, f'demonstrative "{d}" points outside the sentence; name the thing instead'))
+        # 원칙 3: 의인화. 사람이 아닌 대상이 말하거나 보여 주는 것처럼 쓴 표현
+        for pm in sorted(set(re.findall(r"((?:말해|보여|알려|증명해)\s?(?:준다|주는|주고|주며|줌)|이야기한다|알아서)", full))):
+            issues.append(("WARN", i, f'personification "{pm}"; write what actually happens or who does it'))
         for ph in PLACEHOLDER.findall(full):
             issues.append(("INFO", i, f"placeholder to fill: {ph}"))
 
@@ -250,6 +253,13 @@ def main():
     if layouts[-1] != "closing":
         issues.append(("WARN", len(slides), 'last slide is not data-layout="closing"'))
 
+    if not re.search(r'<html[^>]*style="[^"]*--project:\s*#[0-9a-fA-F]{6}', src):
+        issues.append(("WARN", 0, '<html> has no style="--project:#RRGGBB"; run scripts/project_identity.py and set the project color'))
+    for i, (_, layout, _) in enumerate(titles, 1):
+        if layout in ("cover", "closing") and not any("project" in n.cls for n in walk(slides[i - 1])):
+            issues.append(("WARN", i, f'{layout} slide has no .project (project name)'))
+        if layout == "cover" and not any("summary" in n.cls for n in walk(slides[i - 1])):
+            issues.append(("WARN", i, 'cover has no .summary (one line saying what the project is)'))
     if not re.search(r'<html[^>]*data-ratio="\d+(?:\.\d+)?:\d+(?:\.\d+)?"', src):
         issues.append(("WARN", 0, '<html> has no data-ratio="W:H"; the template sets the slide and PDF page ratio from it'))
     body_html = src[src.find("<body"):]

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko" data-lang="ko" data-ratio="16:9">
+<html lang="ko" data-lang="ko" data-ratio="16:9" style="--project:#1f3784">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,7 +20,16 @@ html[data-lang="ko"] body [lang="en"], html[data-lang="en"] body [lang="ko"]{dis
 .eyebrow{font-size:1.35cqw;color:var(--muted);letter-spacing:.02em}
 .title{font-size:2.4cqw;font-weight:700;line-height:1.3;margin:0}
 .lead{font-size:2.1cqw;font-weight:500;line-height:1.45;margin:0;padding-left:1.2cqw;border-left:.35cqw solid #9ca3af}
+/* 프로젝트 표시: 표지와 마무리 장에만 프로젝트 색 띠와 이름을 둔다. 색은 <html style="--project:…">에서 정한다 */
+.cover,.slide[data-layout="closing"]{border-left:.9cqw solid var(--project,#475569)}
+.project{font-size:1.5cqw;font-weight:800;letter-spacing:.02em;color:var(--project,#475569)}
+.cover .project{margin-top:auto}
+.project .summary{font-weight:500;color:var(--muted);margin-left:.6cqw}
+/* 소속: 사용자 프로필(~/.config/informative-slides/profile.json)의 소속·팀·로고. 표지 맨 위에 둔다 */
+.org{display:flex;align-items:center;gap:1cqw;font-size:1.3cqw;color:var(--muted)}
+.org .logo{height:4.5cqh;width:auto;max-width:14cqw;object-fit:contain}
 .cover .title{font-size:3.6cqw;margin-top:auto}
+.cover .project + .title{margin-top:1.2cqh}
 .cover .sub{font-size:1.8cqw;color:var(--muted);margin-bottom:auto}
 ul.points{font-size:2cqw;line-height:1.5;margin:0;padding-left:1.3em}
 ul.points li+li{margin-top:1.2cqh}
@@ -257,13 +266,15 @@ svg .edge.opt{stroke-dasharray:8 6}
 <main class="deck">
 
 <section class="slide cover" data-layout="cover">
+  <div class="org"><!-- 프로필에 로고가 있으면: <img class="logo" src="data:…" alt="소속 로고"> --><span>소속 · 팀</span></div>
+  <div class="project">drive-project-forward<span class="summary"><span lang="ko">· 연구 미팅 준비와 기록을 돕는 Claude Code 플러그인</span><span lang="en">· A Claude Code plugin for preparing and recording research meetings</span></span></div>
   <div class="title">
-    <span lang="ko">drive-project-forward 미팅 기록 파일</span>
-    <span lang="en">The files drive-project-forward reads and writes around a meeting</span>
+    <span lang="ko">미팅 전후 기록 파일의 작성 시점과 수정 조건</span>
+    <span lang="en">When meeting records are written and when they change</span>
   </div>
   <div class="sub">
-    <span lang="ko">템플릿 예시 · 2026-10-28</span>
-    <span lang="en">Template example · 2026-10-28</span>
+    <span lang="ko">템플릿 예시 · 발표 홍길동 · 2026-10-28</span>
+    <span lang="en">Template example · Presenter Gildong Hong · 2026-10-28</span>
   </div>
 </section>
 
@@ -351,6 +362,7 @@ svg .edge.opt{stroke-dasharray:8 6}
 </section>
 
 <section class="slide" data-layout="closing">
+  <div class="project">drive-project-forward</div>
   <div class="eyebrow"><span lang="ko">결정 요청</span><span lang="en">Decision</span></div>
   <h2 class="title">
     <span lang="ko">연구팀 미팅에 drive-project-forward 적용 여부 결정 요청 (11월 중)</span>
