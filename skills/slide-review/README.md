@@ -23,4 +23,4 @@ python3 skills/slide-review/scripts/review.py stop             # 검수 서버�
 - `검수 완료`: 남은 의견을 보내고 검수를 끝낸다. `<덱 이름>-feedback.done`이 생긴다. 이후 화면에서는 HTML·PDF 저장과 PDF 설정만 쓸 수 있고, 탭을 닫으면 검수 서버가 종료된다.
 - 검수 서버는 열린 검수 화면이 없는 상태가 10분, 또는 조작이 없는 상태가 60분 이어지면 스스로 종료한다.
 - 상단 막대에서 비율, 표시 크기, PDF 가로 길이를 바꿀 수 있다. 화면과 PDF에만 적용되고 덱 파일은 바뀌지 않는다.
-- `HTML 저장`, `PDF 저장`은 Chrome·Edge에서 저장 위치를 묻는다. Safari·Firefox는 브라우저 다운로드 설정을 따른다. PDF는 서버가 Chrome으로 만들며 Chrome, Chromium, Edge 중 하나가 설치되어 있어야 한다. 검수 화면과 PDF에는 함께 들어 있는 Pretendard 글꼴(SIL OFL 1.1)이 쓰이고 PDF에 포함된다.
+- `HTML 저장`, `PDF 저장`은 Chrome·Edge에서 저장 위치를 묻는다. Safari·Firefox는 브라우저 다운로드 설정을 따른다. PDF는 서버 컴퓨터의 Chrome, Chromium, Edge(Playwright Chromium 포함)로 만든다. 서버 컴퓨터에 없으면(ssh 원격 서버 등) 브라우저 인쇄 창으로 저장한다. 검수 화면과 PDF에는 함께 들어 있는 Pretendard 글꼴(SIL OFL 1.1)이 쓰이고 PDF에 포함된다.

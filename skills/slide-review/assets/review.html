@@ -411,9 +411,23 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
   };
   $('.dl.html').onclick = () => saveFile(stem + '.html', 'text/html', '.html',
     () => fetch(deckPath, { cache: 'no-store' }).then((r) => r.blob()), 'HTML 저장 중');
-  // PDF는 서버가 Chrome으로 만든다. 브라우저 인쇄 창은 브라우저마다 쪽 크기 처리가 달라 장이 잘린다.
+  // PDF는 서버가 Chrome·Chromium·Edge로 만든다(쪽 크기를 정확히 맞춘다). 서버 컴퓨터에 브라우저가 없으면(예: ssh 원격 서버)
+  // 사용자 브라우저의 인쇄 창으로 저장한다. 인쇄에도 단계별 쪽, 글꼴, 고른 비율·가로 길이가 적용된다.
+  let serverPdf = true;
+  fetch('/__capabilities', { cache: 'no-store' }).then((r) => r.json()).then((c) => {
+    serverPdf = !!c.pdf;
+    if (!serverPdf) $('.dl.pdf').title = '서버 컴퓨터에 Chrome이 없어 브라우저 인쇄 창으로 저장한다. 대상에서 PDF로 저장을 고른다';
+  }).catch(() => {});
   $('.dl.pdf').onclick = () => {
     const lang = (doc && doc.documentElement.dataset.lang) || 'ko';
+    if (!serverPdf) {
+      if (!doc) return;
+      applyRatio();
+      $('.status').textContent = '인쇄 창에서 대상을 PDF로 저장으로 고른다 (서버 컴퓨터에 Chrome이 없다)';
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+      return;
+    }
     const q = new URLSearchParams({ lang, ratio: ratioStr(), w: String(pdfWidthIn()) });
     saveFile(stem + (lang === 'ko' ? '' : '-' + lang) + '.pdf', 'application/pdf', '.pdf', () => fetch('/__pdf' + deckPath + '?' + q).then((r) => {
       if (!r.ok) return r.text().then((t) => { throw new Error(t); });

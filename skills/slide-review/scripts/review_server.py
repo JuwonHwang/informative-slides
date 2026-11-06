@@ -75,7 +75,14 @@ def watchdog():
 
 
 def find_chrome():
-    cands = [os.environ.get("CHROME"),
+    """Chrome, Chromium, Edge, or Playwright's Chromium. REVIEW_PDF=browser forces the browser print fallback."""
+    if os.environ.get("REVIEW_PDF") == "browser":
+        return None
+    import glob
+    pw = sorted(glob.glob(os.path.expanduser("~/.cache/ms-playwright/chromium*/chrome-*/chrome")) +
+                glob.glob(os.path.expanduser("~/Library/Caches/ms-playwright/chromium*/chrome-mac*/Chromium.app/Contents/MacOS/Chromium")) +
+                glob.glob(os.path.expanduser("~/.cache/ms-playwright/chromium_headless_shell*/chrome-*/headless_shell")))
+    cands = [os.environ.get("CHROME"), *reversed(pw),
              "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
              "/Applications/Chromium.app/Contents/MacOS/Chromium",
              "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
@@ -130,6 +137,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             if "active=1" in self.path:
                 LAST_ACTIVE = LAST_SEEN
             body = json.dumps({"target": TARGET, "round": ROUND, "finished": FINISHED}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(body)
+            return None
+        if self.path == "/__capabilities":
+            body = json.dumps({"pdf": bool(find_chrome())}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
