@@ -94,7 +94,8 @@ svg .edge.opt{stroke-dasharray:8 6}
 @media print{
   html,body{height:auto}
   .deck{position:static;display:block}
-  .slide{display:flex!important;width:var(--pw,1600px);height:var(--ph,900px);break-after:page}
+  /* container-type:size가 있으면 Firefox가 인쇄할 때 SVG 글자를 그리지 않는다. 인쇄에서는 끄고, 장 크기 단위(cqw)는 쪽 크기 기준으로 계산된다 */
+  .slide{display:flex!important;width:var(--pw,1600px);height:var(--ph,900px);break-after:page;container-type:normal}
   .counter,.langbtn,.check-banner{display:none}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;transition:none!important}
 }

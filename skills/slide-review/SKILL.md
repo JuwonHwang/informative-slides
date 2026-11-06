@@ -30,6 +30,7 @@ description: HTML 슬라이드 덱을 브라우저 검수 화면에 띄워, 사�
 - `HTML 저장`과 `PDF 저장`은 Chrome·Edge에서 브라우저 저장 창으로 위치와 파일 이름을 묻는다. Safari·Firefox에는 이 창이 없어 브라우저의 다운로드 설정을 따른다.
 - PDF는 서버가 Chrome·Chromium·Edge(Playwright가 설치한 Chromium 포함)로 렌더링한다. 지금 보는 언어, 고른 비율과 가로 길이로 장마다 한 쪽을 만든다. 덱에 단계(`data-step`, `data-steps`)가 있으면 단계마다 별개의 쪽이 된다. Chrome은 쪽 크기를 반올림하므로 서버가 쪽 크기를 정확한 값으로 고친다. 서버 컴퓨터에 이 브라우저가 없으면(예: ssh로 연결한 원격 서버) `PDF 저장`은 사용자 브라우저의 인쇄 창을 연다. 인쇄에도 단계별 쪽, 글꼴, 비율·가로 길이가 적용되지만 쪽 크기 보정은 없고, Safari는 쪽 크기 지정을 무시해 장이 잘린다. Firefox와 Chrome에서 대상을 "PDF로 저장"으로 고른다.
 - 글꼴: 서버는 덱을 보여 줄 때와 PDF를 만들 때 이 스킬에 들어 있는 Pretendard(`assets/fonts/`, 굵기 400·500·600·700·800)를 덱에 넣는다. 그래서 검수 화면과 PDF가 같은 글꼴이고, 만드는 컴퓨터에 Pretendard가 없어도 PDF에 Pretendard가 들어간다. 덱 파일은 바꾸지 않는다. 덱이 `font-family`에서 Pretendard를 쓰지 않으면 덱이 지정한 글꼴을 쓴다.
+- 인쇄 보정: 서버는 덱을 보여 줄 때 인쇄용 CSS 한 줄(`.slide{container-type:normal}`)을 넣는다. 장에 `container-type:size`가 있으면 Firefox가 인쇄할 때 SVG 구조도의 글자를 그리지 않기 때문이다. 이 보정은 이전 템플릿으로 만든 덱에도 적용된다.
 - 덱의 장은 `<section class="slide">`이고, 없으면 `<section>`이다. 장 이동은 덱이 받는 `←`/`→` 키를 검수 화면이 대신 보낸다. 이 두 조건을 갖춘 덱이면 어느 도구로 만들었든 검수할 수 있다.
 
 ## 절차
