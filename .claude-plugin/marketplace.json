@@ -1,0 +1,13 @@
+{
+  "name": "informative-slides",
+  "owner": {
+    "name": "JuwonHwang"
+  },
+  "description": "발표자 없이 읽어도 이해되는 HTML 슬라이드를 만들고 요소별로 검수하는 Claude Code 플러그인",
+  "plugins": [
+    {
+      "name": "informative-slides",
+      "source": "./"
+    }
+  ]
+}

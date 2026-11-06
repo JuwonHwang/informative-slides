@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>슬라이드 검수</title>
+<style>
+:root{--ink:#0F172A;--muted:#64748B;--line:#E2E8F0;--soft:#F8FAFC;--accent:#2563EB;--good:#059669;--warn:#F59E0B}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{display:grid;grid-template-rows:52px 1fr;font:14px/1.5 -apple-system,"Apple SD Gothic Neo","Segoe UI",sans-serif;color:var(--ink);background:#E2E8F0;overflow:hidden}
+button{font:inherit;cursor:pointer}
+/* top bar */
+.bar{display:flex;align-items:center;gap:16px;padding:0 16px;background:#fff;border-bottom:1px solid var(--line)}
+.bar .name{font-weight:700;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav{display:flex;align-items:center;gap:6px}
+.nav button{width:32px;height:32px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.nav .pos{min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+.toggle{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.ctl{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:13px}
+.ctl select,.ctl input{font:inherit;font-size:13px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+.ctl input{width:56px}
+.status{color:var(--muted);font-size:13px;margin-left:auto}
+.dl{padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:13px;text-decoration:none;cursor:pointer}
+.dl:hover{background:var(--soft)}
+.done{padding:7px 16px;border:0;border-radius:8px;background:var(--good);color:#fff;font-weight:700}
+.done[disabled]{opacity:.5;cursor:default}
+/* main */
+.main{display:grid;grid-template-columns:1fr 380px;min-height:0}
+.stage{position:relative;display:grid;place-items:center;padding:20px;min-width:0;min-height:0;overflow:auto}
+.stage iframe{border:0;background:#fff;box-shadow:0 8px 24px rgba(15,23,42,.18);border-radius:4px}
+.layer{position:fixed;inset:0;pointer-events:none;z-index:5}
+.ov{position:fixed;border:2px solid var(--accent);border-radius:4px;background:none;display:none}
+.ov.ov-hover{border-style:dashed;background:none}
+.ov.ov-flash{border-color:var(--warn);border-width:3px}
+.ov-pin{position:fixed;width:22px;height:22px;margin:-11px 0 0 -11px;display:grid;place-items:center;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700;box-shadow:0 0 0 2px #fff}
+/* panel */
+.panel{display:flex;flex-direction:column;gap:12px;padding:16px;background:#fff;border-left:1px solid var(--line);overflow:auto}
+.panel h2{font-size:15px;line-height:1.4}
+.sec{font-size:12px;font-weight:700;color:var(--muted);margin-top:4px}
+.hint{font-size:13px;color:var(--muted)}
+.sel{padding:8px 10px;border-radius:8px;background:#EFF6FF;border:1px solid #93C5FD;font-size:13px}
+.sel b{color:#1D4ED8}
+textarea{width:100%;min-height:76px;padding:8px;border:1px solid #CBD5E1;border-radius:8px;font:inherit;resize:vertical}
+.row{display:flex;gap:6px}
+.b{padding:5px 12px;border:1px solid #CBD5E1;border-radius:6px;background:var(--soft)}
+.b.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+ol.items{list-style:none;display:flex;flex-direction:column;gap:6px}
+ol.items li{display:grid;grid-template-columns:22px 1fr auto;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:13px}
+ol.items li:hover{border-color:var(--accent)}
+ol.items .n{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700}
+ol.items .lb{color:var(--muted)}
+ol.items .x{border:0;background:none;color:#94A3B8}
+.slides{display:flex;flex-wrap:wrap;gap:6px}
+.slides button{min-width:30px;padding:2px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px}
+.slides button.has{border-color:var(--accent);color:var(--accent);font-weight:700}
+.slides button.cur{background:var(--ink);border-color:var(--ink);color:#fff}
+.err{padding:24px;color:#B91C1C}
+</style>
+</head>
+<body>
+<div class="bar">
+  <span class="name"></span>
+  <div class="nav"><button class="prev" title="이전 (←)">◀</button><span class="pos">–</span><button class="next" title="다음 (→)">▶</button></div>
+  <label class="toggle"><input type="checkbox" class="selmode" checked> 요소 선택</label>
+  <label class="ctl" title="화면과 PDF에 적용한다. 덱 파일은 바꾸지 않는다">비율
+    <select class="ratio"><option value="">덱 설정</option><option>16:9</option><option>16:10</option><option>4:3</option><option>3:2</option><option>1:1</option><option>21:9</option></select></label>
+  <label class="ctl" title="검수 화면에서 슬라이드를 보이는 크기. 100%는 PDF 쪽의 실제 크기">표시
+    <select class="zoom"><option value="fit">맞춤</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.5">150%</option></select></label>
+  <label class="ctl" title="PDF 쪽의 가로 길이. 세로는 비율에서 정해진다">PDF 가로
+    <select class="pw"><option value="16">16 in</option><option value="13.3333333">13.33 in (파워포인트 와이드)</option><option value="11.69">11.69 in (A4 가로)</option><option value="20">20 in (1920px)</option><option value="custom">직접 입력</option></select>
+    <input class="pwc" type="number" min="1" max="60" step="0.01" placeholder="in" hidden></label>
+  <span class="status"></span>
+  <button class="dl html" title="덱 HTML 파일을 저장한다. 저장 위치를 고른다">HTML 저장</button>
+  <button class="dl pdf" title="지금 보는 언어, 고른 비율과 가로 길이로 장마다 한 쪽인 PDF를 저장한다. 저장 위치를 고른다">PDF 저장</button>
+  <button class="done">검수 완료</button>
+</div>
+<div class="main">
+  <div class="stage"><iframe class="deck" title="슬라이드"></iframe></div>
+  <aside class="panel">
+    <h2 class="stitle">불러오는 중</h2>
+    <div class="sec">요소 의견</div>
+    <div class="pick"></div>
+    <ol class="items"></ol>
+    <div class="sec">슬라이드 전체 의견</div>
+    <textarea class="note" placeholder="흐름, 구성처럼 특정 요소에 속하지 않는 의견"></textarea>
+    <div class="sec">의견이 있는 슬라이드</div>
+    <div class="slides"></div>
+  </aside>
+</div>
+<div class="layer"></div>
+<script>
+(() => {
+  const deckPath = decodeURIComponent(location.pathname.replace(/^\/__review/, ''));
+  const base = deckPath.replace(/\.html?$/, '');
+  const $ = (s) => document.querySelector(s);
+  const frame = $('.deck'), layer = $('.layer');
+  $('.name').textContent = deckPath.split('/').pop();
+  document.title = '검수 · ' + deckPath.split('/').pop();
+
+  const LABELS = [
+    ['.eyebrow', '머리표'], ['.recap', '리캡'], ['g[data-part]', '구조도 요소'], ['[data-part]', '구조도 화살표·라벨'],
+    ['.locator', '위치 표시'], ['.caption', '캡션'], ['.zoom', '확대 영역'], ['.side', '확대 옆 설명'],
+    ['ul.points > li', '불릿'], ['ul.points', '불릿 목록'], ['td', '표 칸'], ['.figure', '그림'], ['.cover .sub', '부제'],
+    ['.kicker', '킥커'], ['.title', '제목'], ['.lead', '리드'], ['.takeaway', '시사점'],
+    ['.source', '출처'], ['.defs', '용어 정의'], ['.metric', '수치 카드'], ['.metrics', '수치 카드 묶음'],
+    ['ol.flow > li', '단계'], ['ol.flow', '단계 흐름'], ['.card', '카드'], ['.cards', '카드 묶음'],
+    ['.bar', '막대'], ['.bars', '막대 그래프'], ['.compare .col', '비교 열'], ['.compare', '비교'],
+    ['ol.summary > li', '요약 항목'], ['ol.summary', '요약 목록'], ['dl.glossary > div', '용어'],
+    ['dl.glossary', '용어 목록'], ['.asks > li', '요청 항목'], ['.asks', '요청 목록'], ['.meta', '발표 정보'],
+    ['.panel', '패널'], ['.split', '분할 영역'], ['.s-head', '머리 영역'], ['.s-body', '본문'],
+    ['.s-foot', '하단'], ['h1,h2,h3,h4', '제목'], ['table', '표'], ['tr', '표 행'], ['li', '목록 항목'],
+    ['ul,ol', '목록'], ['figure,img,svg,canvas,text', '그림'], ['p', '문단'], ['blockquote', '인용'],
+  ];
+  const NAMED = LABELS.map((x) => x[0]).join(',');
+  const labelOf = (el) => (LABELS.find(([s]) => el.matches(s)) || [, '영역'])[1];
+  const clean = (t) => (t || '').replace(/\s+/g, ' ').trim();
+  const excerpt = (el) => { const t = clean(el.innerText || el.textContent); return t.length > 40 ? t.slice(0, 40) + '…' : t; };
+
+  let doc = null, win = null, slides = [], cur = -1, sel = null, hover = null, flashEl = null, flashT = 0;
+  let db = {}, saveT = 0;
+
+  const titleOf = (s) => { const t = s.querySelector('.title, h1, h2, h3'); return t ? clean(t.innerText || t.textContent) || '(제목 없음)' : '(제목 없음)'; };
+  const slideOf = (el) => slides.findIndex((s) => s.contains(el));
+  const S = (k) => (db[k] = db[k] || { note: '', items: [] });
+  const pathOf = (el, s) => {
+    const parts = [];
+    for (let n = el; n && n !== s; n = n.parentElement) parts.unshift(`${n.tagName.toLowerCase()}:nth-child(${[...n.parentElement.children].indexOf(n) + 1})`);
+    return parts.join(' > ');
+  };
+  const find = (k, p) => { try { return p ? slides[k].querySelector(':scope > ' + p) : slides[k]; } catch (e) { return null; } };
+  const hasContent = (el) => clean(el.textContent) || el.matches('img,svg,canvas,figure');
+  const area = (n) => { const r = n.getBoundingClientRect(); return r.width * r.height; };
+  const blockOf = (el, s) => {
+    let generic = null;
+    for (let n = el; n && n !== s; n = n.parentElement) {
+      if (n.matches(NAMED) && hasContent(n)) return n;
+      if (!generic && n.matches('div') && hasContent(n)) generic = n;
+    }
+    return generic;
+  };
+  const parentBlock = (el, s) => {
+    for (let n = el.parentElement; n && n !== s; n = n.parentElement) if (n.matches(NAMED + ',div') && hasContent(n) && area(n) > area(el) + 4) return n;
+    return null;
+  };
+
+  // ---- persistence (review_server.py)
+  const md = () => {
+    let out = `# 피드백: ${doc ? doc.title : ''}\n\n파일: ${deckPath}\n`;
+    const ks = Object.keys(db).filter((k) => db[k].note.trim() || db[k].items.length).sort((a, b) => a - b);
+    if (!ks.length) out += '\n(작성한 피드백 없음)\n';
+    ks.forEach((k) => {
+      out += `\n## ${+k + 1}. ${slides[k] ? titleOf(slides[k]) : ''}\n\n`;
+      if (db[k].note.trim()) out += `- 슬라이드 전체: ${db[k].note.trim()}\n`;
+      db[k].items.forEach((it, i) => { out += `- ${i + 1}. ${it.label} "${it.excerpt}" (\`${it.path}\`): ${it.text}\n`; });
+    });
+    return out;
+  };
+  const push = (done) => fetch('/__feedback', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ deck: deckPath, markdown: md(), json: { title: doc && doc.title, slides: slides.map(titleOf), feedback: db }, done: !!done }),
+  }).then((r) => { $('.status').textContent = r.ok ? (done ? '검수 완료 전달됨' : '저장됨') : '저장 실패'; return r.ok; })
+    .catch(() => { $('.status').textContent = '저장 실패: 서버 연결 없음'; return false; });
+  const save = () => { $('.status').textContent = '저장 중'; $('.done').disabled = false; clearTimeout(saveT); saveT = setTimeout(() => push(false), 400); };
+
+  // ---- layout: ratio, display size, PDF width (applied to the screen and the PDF only; the deck file is not changed)
+  let deckRatio = '16:9';
+  const ratioStr = () => $('.ratio').value || deckRatio;
+  const ratioNum = () => { const [w, h] = ratioStr().split(':').map(Number); return [w, h]; };
+  const pdfWidthIn = () => {
+    const v = $('.pw').value;
+    const n = v === 'custom' ? parseFloat($('.pwc').value) : parseFloat(v);
+    return n > 0 ? n : 16;
+  };
+  const applyRatio = () => {
+    if (!doc) return;
+    const [rw, rh] = ratioNum(), wIn = pdfWidthIn();
+    const r = doc.documentElement.style;
+    r.setProperty('--rw', rw); r.setProperty('--rh', rh);
+    r.setProperty('--pw', wIn + 'in'); r.setProperty('--ph', (wIn * rh / rw) + 'in');
+  };
+  const fit = () => {
+    const [rw, rh] = ratioNum();
+    const st = $('.stage').getBoundingClientRect();
+    const z = $('.zoom').value;
+    const w = z === 'fit' ? Math.min(st.width - 40, (st.height - 40) * rw / rh) : pdfWidthIn() * 96 * parseFloat(z);
+    frame.style.width = w + 'px'; frame.style.height = w * rh / rw + 'px';
+  };
+  const relayout = () => { applyRatio(); fit(); };
+  $('.ratio').onchange = relayout;
+  $('.zoom').onchange = relayout;
+  $('.pw').onchange = () => { $('.pwc').hidden = $('.pw').value !== 'custom'; relayout(); };
+  $('.pwc').oninput = relayout;
+  ['keydown', 'keyup'].forEach((t) => $('.bar').addEventListener(t, (e) => { if (e.target.closest('select,input')) e.stopPropagation(); }));
+  addEventListener('resize', fit); fit();
+
+  // ---- overlay drawing (iframe coordinates -> page coordinates)
+  const mk = (cls) => { const d = document.createElement('div'); d.className = 'ov ' + cls; layer.appendChild(d); return d; };
+  const hoverBox = mk('ov-hover'), selBox = mk('ov-sel'), flashBox = mk('ov-flash');
+  const rectOf = (el) => {
+    const f = frame.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return { left: f.left + r.left, top: f.top + r.top, width: r.width, height: r.height, right: f.left + r.right };
+  };
+  const place = (d, el) => {
+    if (!el || !doc || !doc.contains(el)) { d.style.display = 'none'; return; }
+    const r = rectOf(el);
+    if (!r.width && !r.height) { d.style.display = 'none'; return; }
+    Object.assign(d.style, { display: 'block', left: r.left - 3 + 'px', top: r.top - 3 + 'px', width: r.width + 6 + 'px', height: r.height + 6 + 'px' });
+  };
+  const drawPins = () => {
+    layer.querySelectorAll('.ov-pin').forEach((p) => p.remove());
+    ((db[cur] || {}).items || []).forEach((it, i) => {
+      const el = find(cur, it.path);
+      if (!el) return;
+      const r = rectOf(el);
+      if (!r.width) return;
+      const p = document.createElement('div');
+      p.className = 'ov-pin'; p.textContent = i + 1;
+      p.style.left = r.right + 'px'; p.style.top = r.top + 'px';
+      layer.appendChild(p);
+    });
+  };
+
+  // ---- panel rendering
+  const renderPick = () => {
+    const p = $('.pick');
+    if (!sel) { p.innerHTML = '<div class="hint">슬라이드에서 요소를 클릭한다. 같은 요소를 다시 클릭하면 상위 블록으로 넓어진다.</div>'; return; }
+    p.innerHTML = '<div class="sel"><b></b> · <span></span></div><textarea class="txt" placeholder="이 요소에 대한 의견. 입력하는 대로 저장된다"></textarea><div class="row"><button class="b pri fin">완료</button></div>';
+    p.querySelector('.sel b').textContent = labelOf(sel);
+    p.querySelector('.sel span').textContent = excerpt(sel) || '(텍스트 없음)';
+    const ta = p.querySelector('.txt');
+    const path = pathOf(sel, slides[cur]);
+    const items = S(cur).items;
+    let item = items.find((it) => it.path === path) || null;
+    if (item) ta.value = item.text;
+    ta.focus();
+    // Saved on every keystroke: no comment is lost when the reader moves on without pressing a button.
+    ta.addEventListener('input', () => {
+      const v = ta.value.trim();
+      if (v && !item) { item = { path, label: labelOf(sel), excerpt: excerpt(sel), text: v }; items.push(item); }
+      else if (v) item.text = v;
+      else if (item) { items.splice(items.indexOf(item), 1); item = null; }
+      save(); renderItems();
+    });
+    const fin = () => { sel = null; renderPick(); };
+    p.querySelector('.fin').onclick = fin;
+    ta.addEventListener('keydown', (e) => { if ((e.key === 'Enter' && (e.metaKey || e.ctrlKey)) || e.key === 'Escape') fin(); });
+  };
+  const renderItems = () => {
+    const ol = $('.items'); ol.innerHTML = '';
+    ((db[cur] || {}).items || []).forEach((it, i, arr) => {
+      const li = document.createElement('li');
+      li.innerHTML = '<span class="n"></span><span><span class="lb"></span><br><span class="tx"></span></span><button class="x" title="삭제">✕</button>';
+      li.querySelector('.n').textContent = i + 1;
+      li.querySelector('.lb').textContent = `${it.label} · ${it.excerpt}`;
+      li.querySelector('.tx').textContent = it.text;
+      li.onclick = () => { flashEl = find(cur, it.path); flashT = Date.now(); if (flashEl) { sel = flashEl; renderPick(); } };
+      li.querySelector('.x').onclick = (e) => { e.stopPropagation(); arr.splice(i, 1); save(); renderItems(); };
+      ol.appendChild(li);
+    });
+    const box = $('.slides'); box.innerHTML = '';
+    slides.forEach((s, k) => {
+      const b = document.createElement('button');
+      b.textContent = k + 1; b.title = titleOf(s);
+      if (db[k] && (db[k].note.trim() || db[k].items.length)) b.classList.add('has');
+      if (k === cur) b.classList.add('cur');
+      b.onclick = () => goTo(k);
+      box.appendChild(b);
+    });
+  };
+  $('.note').addEventListener('input', (e) => { S(cur).note = e.target.value; save(); renderItems(); });
+
+  // ---- slide navigation: send the deck its own keys so any deck's navigation works
+  const key = (k) => {
+    if (!doc) return;
+    const o = { key: k, code: k, bubbles: true, cancelable: true };
+    (doc.activeElement || doc.body).dispatchEvent(new win.KeyboardEvent('keydown', o));
+    doc.dispatchEvent(new win.KeyboardEvent('keyup', o));
+  };
+  const goTo = (k) => {
+    if (!slides[k]) return;
+    if (win.getComputedStyle(slides[k]).display === 'none' || slides.every((s) => s.getBoundingClientRect().top === slides[0].getBoundingClientRect().top)) {
+      let guard = 60;
+      const step = () => { const c = visible(); if (c === k || !guard--) return; key(c < k ? 'ArrowRight' : 'ArrowLeft'); setTimeout(step, 40); };
+      step();
+    } else slides[k].scrollIntoView();
+  };
+  $('.prev').onclick = () => key('ArrowLeft');
+  $('.next').onclick = () => key('ArrowRight');
+  addEventListener('keydown', (e) => {
+    if (e.target.closest('textarea,input')) return;
+    if (['ArrowRight', 'ArrowLeft', 'PageDown', 'PageUp', ' ', 'Home', 'End'].includes(e.key)) { e.preventDefault(); key(e.key); }
+  });
+
+  const visible = () => {
+    let best = 0, a = -1;
+    slides.forEach((s, k) => {
+      const r = s.getBoundingClientRect();
+      const w = Math.max(0, Math.min(r.right, win.innerWidth) - Math.max(r.left, 0));
+      const h = Math.max(0, Math.min(r.bottom, win.innerHeight) - Math.max(r.top, 0));
+      if (w * h > a) { a = w * h; best = k; }
+    });
+    return best;
+  };
+
+  const tick = () => {
+    if (!doc || !slides.length) return;
+    const k = visible();
+    if (k !== cur) {
+      cur = k; sel = null; hover = null;
+      $('.pos').textContent = `${k + 1} / ${slides.length}`;
+      $('.stitle').textContent = `${k + 1}. ${titleOf(slides[k])}`;
+      $('.note').value = (db[k] || {}).note || '';
+      renderPick(); renderItems();
+    }
+    const on = $('.selmode').checked;
+    place(hoverBox, on && hover !== sel ? hover : null);
+    place(selBox, sel);
+    place(flashBox, Date.now() - flashT < 1200 ? flashEl : null);
+    drawPins();
+  };
+
+  // ---- hook into the deck once it loads
+  const attach = () => {
+    doc = frame.contentDocument; win = frame.contentWindow;
+    const m = (doc.documentElement.dataset.ratio || '').match(/^\d+(\.\d+)?:\d+(\.\d+)?$/);
+    deckRatio = m ? m[0] : '16:9';
+    $('.ratio').options[0].textContent = '덱 설정 (' + deckRatio + ')';
+    relayout();
+    slides = [...doc.querySelectorAll('section.slide')];
+    if (!slides.length) slides = [...doc.querySelectorAll('section')];
+    if (!slides.length) { $('.stitle').textContent = '슬라이드를 찾지 못했다. 덱에 <section> 요소가 없다.'; return; }
+    const st = doc.createElement('style');
+    st.textContent = 'html.rv-sel section *{cursor:crosshair!important}';
+    doc.head.appendChild(st);
+    const syncMode = () => doc.documentElement.classList.toggle('rv-sel', $('.selmode').checked);
+    $('.selmode').onchange = () => { syncMode(); if (!$('.selmode').checked) { sel = hover = null; renderPick(); } };
+    syncMode();
+    doc.addEventListener('mousemove', (e) => { hover = $('.selmode').checked && slideOf(e.target) === cur ? blockOf(e.target, slides[cur]) : null; }, true);
+    doc.addEventListener('mouseleave', () => { hover = null; }, true);
+    const swallow = (e) => { if ($('.selmode').checked && slideOf(e.target) >= 0) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); } };
+    ['mousedown', 'mouseup', 'pointerdown', 'pointerup', 'dblclick', 'contextmenu'].forEach((t) => doc.addEventListener(t, swallow, true));
+    doc.addEventListener('click', (e) => {
+      if (!$('.selmode').checked) return;
+      const k = slideOf(e.target);
+      if (k < 0) return;
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      if (k !== cur) return;
+      if (sel && sel.contains(e.target)) sel = parentBlock(sel, slides[k]) || sel;
+      else sel = blockOf(e.target, slides[k]);
+      renderPick();
+    }, true);
+    doc.addEventListener('keydown', (e) => { if (e.key === 'Escape') { sel = null; renderPick(); } }, true);
+    cur = -1;
+  };
+
+  fetch(base + '-feedback.json', { cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : {})).then((j) => { db = (j && j.feedback) || {}; }).catch(() => {})
+    .finally(() => {
+      frame.addEventListener('load', attach);
+      frame.src = '/__render' + deckPath + location.hash; // 서버가 PDF와 같은 글꼴(Pretendard)을 넣어 준다
+      setInterval(tick, 80);
+    });
+
+  // ---- saving: Chrome·Edge ask where to save (the picker needs the click, so it opens before fetching).
+  // Safari·Firefox have no picker; the browser's download setting decides.
+  const stem = deckPath.split('/').pop().replace(/\.html?$/, '');
+  const saveFile = async (name, mime, ext, getBlob, busy) => {
+    let handle = null;
+    if (window.showSaveFilePicker) {
+      try { handle = await showSaveFilePicker({ suggestedName: name, types: [{ description: ext, accept: { [mime]: [ext] } }] }); }
+      catch (e) { if (e.name === 'AbortError') { $('.status').textContent = '저장 취소'; return; } }
+    }
+    $('.status').textContent = busy;
+    try {
+      const blob = await getBlob();
+      if (handle) { const w = await handle.createWritable(); await w.write(blob); await w.close(); $('.status').textContent = handle.name + ' 저장됨'; return; }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+      $('.status').textContent = name + ' 다운로드됨';
+    } catch (e) { $('.status').textContent = '저장 실패: ' + e.message; }
+  };
+  $('.dl.html').onclick = () => saveFile(stem + '.html', 'text/html', '.html',
+    () => fetch(deckPath, { cache: 'no-store' }).then((r) => r.blob()), 'HTML 저장 중');
+  // PDF는 서버가 Chrome으로 만든다. 브라우저 인쇄 창은 브라우저마다 쪽 크기 처리가 달라 장이 잘린다.
+  $('.dl.pdf').onclick = () => {
+    const lang = (doc && doc.documentElement.dataset.lang) || 'ko';
+    const q = new URLSearchParams({ lang, ratio: ratioStr(), w: String(pdfWidthIn()) });
+    saveFile(stem + (lang === 'ko' ? '' : '-' + lang) + '.pdf', 'application/pdf', '.pdf', () => fetch('/__pdf' + deckPath + '?' + q).then((r) => {
+      if (!r.ok) return r.text().then((t) => { throw new Error(t); });
+      return r.blob();
+    }), 'PDF 만드는 중');
+  };
+
+  $('.done').onclick = () => { clearTimeout(saveT); push(true).then((ok) => { if (ok) $('.done').disabled = true; }); };
+})();
+</script>
+</body>
+</html>

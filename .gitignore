@@ -1,0 +1,8 @@
+informative-slides-workspace/
+.claude/
+.DS_Store
+__pycache__/
+*-feedback.md
+*-feedback.json
+*-feedback.done
+preview/
