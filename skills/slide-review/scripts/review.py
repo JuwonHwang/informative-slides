@@ -149,6 +149,19 @@ def main():
     with urllib.request.urlopen(req, timeout=5) as r:
         opened = json.loads(r.read())
     switched = bool(opened.get("connected"))
+    if switched:
+        # 열린 화면이 새 회차로 바뀌었다는 신호를 6초까지 기다린다. 화면이 닫혔거나 브라우저가 뒤 탭의 신호를 늦추면 새 탭을 연다
+        switched = False
+        for _ in range(24):
+            time.sleep(0.25)
+            try:
+                with urllib.request.urlopen(f"http://127.0.0.1:{state['port']}/__seen", timeout=2) as r:
+                    seen = json.loads(r.read())
+            except OSError:
+                break
+            if seen.get("round") == opened.get("round"):
+                switched = True
+                break
     if not switched and "--no-browser" not in args:
         webbrowser.open(url)
     print(json.dumps({"url": url, "port": state["port"], "root": state["root"],

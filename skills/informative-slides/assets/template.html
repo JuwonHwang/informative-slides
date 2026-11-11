@@ -45,6 +45,12 @@ ul.points li strong,ol li strong{font-weight:700}
 .locator{background:var(--panel);border-radius:8px;padding:1cqw}
 .locator svg{width:100%;height:auto;display:block}
 .caption{font-size:1.2cqw;color:var(--muted);margin-top:.8cqh}
+/* 방법 설명 장: 왼쪽 구조도(단계마다 지금 부분만 진하게), 오른쪽 단계 설명(지금 단계의 설명만 보인다) */
+.method{flex:1;min-height:0;display:grid;grid-template-columns:1fr 36%;gap:2.5cqw}
+.narration{position:relative;min-height:0;background:var(--panel);border-radius:8px;padding:2.2cqh 1.8cqw;
+  font-size:1.6cqw;line-height:1.6;box-sizing:border-box}
+.narration p{margin:0}
+.narration .step-name{display:block;font-weight:700;margin-bottom:1.2cqh}
 table{border-collapse:collapse;font-size:1.9cqw}
 th,td{border-bottom:1px solid var(--line);padding:1.3cqh 2cqw;text-align:left}
 th{font-weight:600;color:var(--muted)}
@@ -60,10 +66,14 @@ span.new,span.crit,span.c1,span.c2,span.c3,span.c4,td.new,td.crit,td.c1,td.c2,td
 /* 단계 표시: 아직 나오지 않은 요소는 자리를 유지한 채 보이지 않는다 */
 [data-step]{transition:opacity .25s}
 .step-hidden{opacity:0}
+/* data-only="k" 요소는 k단계에만 보인다 */
+.step-off{display:none}
 svg text{font-family:inherit;fill:var(--fg)}
 svg .name{font-weight:700}
 svg .sub,svg .label{fill:var(--muted)}
 svg .box{fill:#fff;stroke:var(--fg);stroke-width:2}
+/* 데이터(입력, 중간 결과, 출력, 파일)는 모서리가 각진 상자(rx="0")로 그려 처리 상자와 모양으로 구분한다 */
+svg .box.data{stroke-width:1.5} svg g:not([class]) > .box.data, svg .legend .box.data{fill:#e9ecef}
 /* 시각 자료 색: 그룹에 텍스트와 같은 색 클래스를 붙이면 상자 테두리와 이름이 그 색, 내부가 그 색의 연한 색이 된다 */
 svg g.new .box{stroke:var(--new);fill:#e0f2fe} svg g.new .name{fill:var(--new)}
 svg g.crit .box{stroke:var(--crit);fill:#fee2e2} svg g.crit .name{fill:var(--crit)}
@@ -79,7 +89,35 @@ svg .edge{stroke:var(--fg);stroke-width:2;fill:none;marker-end:url(#arrow)}
 svg .cell1{fill:#4b5563}
 svg .cell0{fill:#fff;stroke:var(--fg);stroke-width:2}
 svg .edge.opt{stroke-dasharray:8 6}
-.counter{position:fixed;right:1.2vw;bottom:1vh;font-size:12px;color:var(--muted)}
+/* 주 경로: 입력에서 출력으로 가는 경로. 보조 경로(.opt)와 굵기로 구분한다 */
+svg .edge.main{stroke-width:3.5}
+/* 원소 연산(⊕, ⊗, exp, max): 원 안의 기호 */
+svg .op circle{fill:#fff;stroke:var(--fg);stroke-width:2}
+svg .op text{font-weight:700;text-anchor:middle;dominant-baseline:central}
+/* 묶음: 한 모듈로 묶이는 요소를 감싸는 둥근 점선 테두리 */
+svg .group{fill:none;stroke:#6b7280;stroke-width:1.5;stroke-dasharray:6 5;rx:12}
+/* 패널 제목 (a), (b) */
+svg .panel{font-weight:700;fill:var(--fg)}
+/* 수식 기호: 이탤릭 수식 글꼴 */
+svg .math,.math{font-family:"STIX Two Math","STIXGeneral","Cambria Math","Latin Modern Math","Times New Roman",serif;font-style:italic}
+/* \( … \) 수식: 문자는 이탤릭(.math), 기호와 숫자는 바로 선 수식 글꼴(.mathup) */
+svg .mathup,.mathup{font-family:"STIX Two Math","STIXGeneral","Cambria Math","Latin Modern Math","Times New Roman",serif;font-style:normal}
+sub.tex,sup.tex{font-size:70%;line-height:0}
+/* 확대 그림(data-zoom): 전체 그림의 확대 영역 테두리, 확대도 테두리, 둘을 잇는 선 */
+svg .zoom-frame{fill:none;stroke:var(--fg);stroke-width:2.5}
+svg .zoom-panel{fill:#fff;stroke:#9ca3af;stroke-width:1.5}
+svg .zoom-line{stroke:var(--fg);stroke-width:1.5;stroke-dasharray:6 5}
+.counter{position:fixed;right:1.2vw;bottom:1vh;font:inherit;font-size:12px;color:var(--muted);
+  background:var(--panel);border:0;border-radius:6px;padding:4px 10px;cursor:pointer;font-variant-numeric:tabular-nums}
+.counter:hover{background:var(--line)}
+/* 장 바로가기: 장 번호를 누르거나 G 키로 연다 */
+.toc{position:fixed;right:1.2vw;bottom:calc(1vh + 34px);z-index:8;width:min(460px,92vw);max-height:70vh;overflow:auto;
+  background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px;box-sizing:border-box}
+.toc button{display:flex;gap:10px;width:100%;text-align:left;font:inherit;font-size:13px;color:var(--fg);
+  background:none;border:0;border-radius:6px;padding:6px 8px;cursor:pointer;line-height:1.4}
+.toc button:hover{background:var(--panel)}
+.toc button.cur{background:var(--panel);font-weight:700}
+.toc .n{min-width:2.2em;color:var(--muted);font-variant-numeric:tabular-nums}
 .langbtn{position:fixed;left:1.2vw;bottom:1vh;font:inherit;font-size:12px;color:var(--muted);
   background:var(--panel);border:0;border-radius:6px;padding:4px 10px;cursor:pointer;letter-spacing:.02em}
 .langbtn b{color:var(--fg);font-weight:700}
@@ -96,7 +134,7 @@ svg .edge.opt{stroke-dasharray:8 6}
   .deck{position:static;display:block}
   /* container-type:size가 있으면 Firefox가 인쇄할 때 SVG 글자를 그리지 않는다. 인쇄에서는 끄고, 장 크기 단위(cqw)는 쪽 크기 기준으로 계산된다 */
   .slide{display:flex!important;width:var(--pw,1600px);height:var(--ph,900px);break-after:page;container-type:normal}
-  .counter,.langbtn,.check-banner{display:none}
+  .counter,.langbtn,.check-banner,.toc{display:none!important}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;transition:none!important}
 }
 </style>
@@ -112,101 +150,92 @@ svg .edge.opt{stroke-dasharray:8 6}
 <!-- 전체 구조도. 한 번만 정의하고 data-diagram으로 불러온다. 각 부분에 data-part를 붙인다.
      SVG 글자는 같은 위치에 lang="ko"와 lang="en" <text>를 하나씩 둔다. -->
 <template id="diagram-cycle">
-  <svg viewBox="0 0 1600 620" role="img" aria-label="drive-project-forward">
+  <!-- 행 3개(위 20~140, 가운데 220~340, 아래 420~540), 열 3개(A 20~250, B 385~615, C 750~980).
+       굵은 화살표(edge main)는 미팅마다 반복하는 주 경로, 점선(edge opt)은 조건이 맞을 때만 지나는 경로이다. -->
+  <svg viewBox="0 0 1000 560" role="img" aria-label="drive-project-forward">
     <g data-part="goal">
-      <rect class="box" x="20" y="70" width="220" height="140" rx="10"/>
-      <text lang="ko" class="name" x="130" y="112" text-anchor="middle" font-size="22">① 목표 작성 <tspan class="sub" font-size="16" font-weight="400">(goal)</tspan></text>
-      <text lang="en" class="name" x="130" y="112" text-anchor="middle" font-size="22">① Set goal <tspan class="sub" font-size="16" font-weight="400">(goal)</tspan></text>
-      <text lang="ko" class="sub" x="130" y="148" text-anchor="middle" font-size="17">사용자에게 묻고</text>
-      <text lang="en" class="sub" x="130" y="148" text-anchor="middle" font-size="17">asks the user,</text>
-      <text lang="ko" class="sub" x="130" y="172" text-anchor="middle" font-size="17">처음 한 번 작성</text>
-      <text lang="en" class="sub" x="130" y="172" text-anchor="middle" font-size="17">writes once</text>
+      <rect class="box" x="20" y="20" width="230" height="120" rx="10"/>
+      <text lang="ko" class="name" x="135" y="70" text-anchor="middle" font-size="26">① 목표 작성</text>
+      <text lang="en" class="name" x="135" y="70" text-anchor="middle" font-size="26">① Set goal</text>
+      <text class="sub" x="135" y="108" text-anchor="middle" font-size="22">(goal)</text>
     </g>
-    <path class="edge" data-part="goal goalmd" d="M240,140 L298,140"/>
+    <path class="edge" data-part="goal goalmd" d="M135,140 L135,218"/>
 
     <g data-part="goalmd" class="c1">
-      <rect class="box" x="300" y="70" width="240" height="140" rx="10"/>
-      <text class="name" x="420" y="112" text-anchor="middle" font-size="22">GOAL.md</text>
-      <text lang="ko" class="sub" x="420" y="148" text-anchor="middle" font-size="17">배경, 목표,</text>
-      <text lang="en" class="sub" x="420" y="148" text-anchor="middle" font-size="17">background, goal,</text>
-      <text lang="ko" class="sub" x="420" y="172" text-anchor="middle" font-size="17">달성 기준, 일정</text>
-      <text lang="en" class="sub" x="420" y="172" text-anchor="middle" font-size="17">success criteria, schedule</text>
+      <rect class="box data" x="20" y="220" width="230" height="120" rx="0"/>
+      <text class="name" x="135" y="270" text-anchor="middle" font-size="26">GOAL.md</text>
+      <text lang="ko" class="sub" x="135" y="308" text-anchor="middle" font-size="22">목표·달성 기준·일정</text>
+      <text lang="en" class="sub" x="135" y="308" text-anchor="middle" font-size="22">goal, criteria, dates</text>
     </g>
-    <path class="edge" data-part="goalmd walk" d="M540,140 L638,140"/>
-    <text lang="ko" class="label" data-part="goalmd walk" x="589" y="128" text-anchor="middle" font-size="16">달성 기준</text>
-    <text lang="en" class="label" data-part="goalmd walk" x="589" y="128" text-anchor="middle" font-size="16">criteria</text>
+    <path class="edge" data-part="goalmd walk" d="M250,300 L383,300"/>
+    <text lang="ko" class="label" data-part="goalmd walk" x="317" y="290" text-anchor="middle" font-size="20">달성 기준</text>
+    <text lang="en" class="label" data-part="goalmd walk" x="317" y="290" text-anchor="middle" font-size="20">criteria</text>
 
     <g data-part="walk">
-      <rect class="box" x="640" y="70" width="280" height="140" rx="10"/>
-      <text lang="ko" class="name" x="780" y="112" text-anchor="middle" font-size="22">② 자료 준비 <tspan class="sub" font-size="16" font-weight="400">(meet)</tspan></text>
-      <text lang="en" class="name" x="780" y="112" text-anchor="middle" font-size="22">② Prepare slides <tspan class="sub" font-size="16" font-weight="400">(meet)</tspan></text>
-      <text lang="ko" class="sub" x="780" y="148" text-anchor="middle" font-size="17">GOAL.md, 미팅 노트, git log,</text>
-      <text lang="en" class="sub" x="780" y="148" text-anchor="middle" font-size="17">reads GOAL.md, notes,</text>
-      <text lang="ko" class="sub" x="780" y="172" text-anchor="middle" font-size="17">run 기록을 읽고 설명 자료 작성</text>
-      <text lang="en" class="sub" x="780" y="172" text-anchor="middle" font-size="17">git log, runs; writes the material</text>
+      <rect class="box" x="385" y="220" width="230" height="120" rx="10"/>
+      <text lang="ko" class="name" x="500" y="270" text-anchor="middle" font-size="26">② 자료 준비</text>
+      <text lang="en" class="name" x="500" y="270" text-anchor="middle" font-size="26">② Make slides</text>
+      <text class="sub" x="500" y="308" text-anchor="middle" font-size="22">(meet)</text>
     </g>
-    <path class="edge" data-part="walk meeting" d="M920,140 L1038,140"/>
-    <text class="label" data-part="walk meeting" x="979" y="128" text-anchor="middle" font-size="16">.md → .html</text>
+    <path class="edge main" data-part="walk meeting" d="M615,300 L746,300"/>
+    <text lang="ko" class="label" data-part="walk meeting" x="682" y="288" text-anchor="middle" font-size="20">설명 자료</text>
+    <text lang="en" class="label" data-part="walk meeting" x="682" y="288" text-anchor="middle" font-size="20">slides</text>
 
     <g data-part="meeting">
-      <rect class="box" x="1040" y="70" width="240" height="140" rx="10"/>
-      <text lang="ko" class="name" x="1160" y="112" text-anchor="middle" font-size="22">③ 미팅</text>
-      <text lang="en" class="name" x="1160" y="112" text-anchor="middle" font-size="22">③ Meeting</text>
-      <text lang="ko" class="sub" x="1160" y="148" text-anchor="middle" font-size="17">사용자가 자료를 보고</text>
-      <text lang="en" class="sub" x="1160" y="148" text-anchor="middle" font-size="17">the user reads the slides</text>
-      <text lang="ko" class="sub" x="1160" y="172" text-anchor="middle" font-size="17">이해하고 결정</text>
-      <text lang="en" class="sub" x="1160" y="172" text-anchor="middle" font-size="17">and decides</text>
+      <rect class="box" x="750" y="220" width="230" height="120" rx="10"/>
+      <text lang="ko" class="name" x="865" y="270" text-anchor="middle" font-size="26">③ 미팅</text>
+      <text lang="en" class="name" x="865" y="270" text-anchor="middle" font-size="26">③ Meeting</text>
+      <text lang="ko" class="sub" x="865" y="308" text-anchor="middle" font-size="22">사용자가 결정</text>
+      <text lang="en" class="sub" x="865" y="308" text-anchor="middle" font-size="22">the user decides</text>
     </g>
-    <path class="edge" data-part="meeting after" d="M1160,210 L1160,328"/>
-    <text lang="ko" class="label" data-part="meeting after" x="1174" y="274" font-size="16">사용자가 정한 것</text>
-    <text lang="en" class="label" data-part="meeting after" x="1174" y="274" font-size="16">what the user decided</text>
+    <path class="edge main" data-part="meeting after" d="M865,340 L865,416"/>
+    <text lang="ko" class="label" data-part="meeting after" x="851" y="374" text-anchor="end" font-size="20">사용자가 정한 것</text>
+    <text lang="en" class="label" data-part="meeting after" x="851" y="374" text-anchor="end" font-size="20">decisions</text>
 
     <g data-part="after">
-      <rect class="box" x="1040" y="330" width="240" height="140" rx="10"/>
-      <text lang="ko" class="name" x="1160" y="372" text-anchor="middle" font-size="22">④ 노트 작성 <tspan class="sub" font-size="16" font-weight="400">(meet)</tspan></text>
-      <text lang="en" class="name" x="1160" y="372" text-anchor="middle" font-size="22">④ Write note <tspan class="sub" font-size="16" font-weight="400">(meet)</tspan></text>
-      <text lang="ko" class="sub" x="1160" y="408" text-anchor="middle" font-size="17">미팅 노트 작성,</text>
-      <text lang="en" class="sub" x="1160" y="408" text-anchor="middle" font-size="17">writes the note;</text>
-      <text lang="ko" class="sub" x="1160" y="432" text-anchor="middle" font-size="17">GOAL.md는 조건부 수정</text>
-      <text lang="en" class="sub" x="1160" y="432" text-anchor="middle" font-size="17">edits GOAL.md only if needed</text>
+      <rect class="box" x="750" y="420" width="230" height="120" rx="10"/>
+      <text lang="ko" class="name" x="865" y="470" text-anchor="middle" font-size="26">④ 노트 작성</text>
+      <text lang="en" class="name" x="865" y="470" text-anchor="middle" font-size="26">④ Write note</text>
+      <text class="sub" x="865" y="508" text-anchor="middle" font-size="22">(meet)</text>
     </g>
-    <path class="edge" data-part="after note" d="M1040,400 L922,400"/>
-    <path class="edge opt" data-part="after goalmd" d="M1280,400 L1560,400 L1560,30 L420,30 L420,68"/>
-    <text lang="ko" class="label" data-part="after goalmd" x="990" y="56" text-anchor="middle" font-size="16">사용자가 목표 자체를 조정할 때만</text>
-    <text lang="en" class="label" data-part="after goalmd" x="990" y="56" text-anchor="middle" font-size="16">only when the user adjusts the goal itself</text>
+    <path class="edge main" data-part="after note" d="M750,480 L619,480"/>
+    <path class="edge opt" data-part="after goalmd" d="M980,480 L992,480 L992,180 L318,180 L318,240 L254,240"/>
+    <text lang="ko" class="label" data-part="after goalmd" x="655" y="170" text-anchor="middle" font-size="20">사용자가 목표 자체를 조정할 때만</text>
+    <text lang="en" class="label" data-part="after goalmd" x="655" y="170" text-anchor="middle" font-size="20">only when the user adjusts the goal itself</text>
 
     <g data-part="note" class="new">
-      <rect class="box" x="640" y="330" width="280" height="140" rx="10"/>
-      <text class="name" x="780" y="372" text-anchor="middle" font-size="22">note.md</text>
-      <text lang="ko" class="sub" x="780" y="408" text-anchor="middle" font-size="17">정한 것, 할 일,</text>
-      <text lang="en" class="sub" x="780" y="408" text-anchor="middle" font-size="17">decisions, to-dos,</text>
-      <text lang="ko" class="sub" x="780" y="432" text-anchor="middle" font-size="17">보류한 질문</text>
-      <text lang="en" class="sub" x="780" y="432" text-anchor="middle" font-size="17">deferred questions</text>
+      <rect class="box data" x="385" y="420" width="230" height="120" rx="0"/>
+      <text class="name" x="500" y="470" text-anchor="middle" font-size="26">note.md</text>
+      <text lang="ko" class="sub" x="500" y="508" text-anchor="middle" font-size="22">결정·할 일·질문</text>
+      <text lang="en" class="sub" x="500" y="508" text-anchor="middle" font-size="22">decisions, to-dos</text>
     </g>
-    <path class="edge" data-part="note walk" d="M780,330 L780,212"/>
-    <text lang="ko" class="label" data-part="note walk" x="794" y="276" font-size="16">다음 미팅의 리마인드</text>
-    <text lang="en" class="label" data-part="note walk" x="794" y="276" font-size="16">next meeting's reminder</text>
+    <path class="edge main" data-part="note walk" d="M500,420 L500,344"/>
+    <text lang="ko" class="label" data-part="note walk" x="514" y="400" font-size="20">다음 미팅의 리마인드</text>
+    <text lang="en" class="label" data-part="note walk" x="514" y="400" font-size="20">next reminder</text>
 
     <g data-part="wrapup">
-      <rect class="box" x="20" y="330" width="220" height="140" rx="10"/>
-      <text lang="ko" class="name" x="130" y="372" text-anchor="middle" font-size="22">⑤ 발표 자료 <tspan class="sub" font-size="16" font-weight="400">(wrapup)</tspan></text>
-      <text lang="en" class="name" x="130" y="372" text-anchor="middle" font-size="19">⑤ Presentation <tspan class="sub" font-size="14" font-weight="400">(wrapup)</tspan></text>
-      <text lang="ko" class="sub" x="130" y="408" text-anchor="middle" font-size="17">프로젝트 밖의 사람에게</text>
-      <text lang="en" class="sub" x="130" y="408" text-anchor="middle" font-size="17">presentation for</text>
-      <text lang="ko" class="sub" x="130" y="432" text-anchor="middle" font-size="17">보일 발표 자료</text>
-      <text lang="en" class="sub" x="130" y="432" text-anchor="middle" font-size="17">people outside</text>
+      <rect class="box" x="20" y="420" width="230" height="120" rx="10"/>
+      <text lang="ko" class="name" x="135" y="470" text-anchor="middle" font-size="26">⑤ 발표 자료</text>
+      <text lang="en" class="name" x="135" y="470" text-anchor="middle" font-size="26">⑤ Presentation</text>
+      <text class="sub" x="135" y="508" text-anchor="middle" font-size="22">(wrapup)</text>
     </g>
-    <path class="edge" data-part="goalmd wrapup" d="M360,210 L360,400 L242,400"/>
-    <text lang="ko" class="label" data-part="goalmd wrapup" x="374" y="300" font-size="16">배경, 목표</text>
-    <text lang="en" class="label" data-part="goalmd wrapup" x="374" y="300" font-size="16">background, goal</text>
+    <path class="edge" data-part="goalmd wrapup" d="M135,340 L135,416"/>
+    <text lang="ko" class="label" data-part="goalmd wrapup" x="149" y="386" font-size="20">배경, 목표</text>
+    <text lang="en" class="label" data-part="goalmd wrapup" x="149" y="386" font-size="20">background, goal</text>
 
-    <g data-part="legend">
-      <line x1="20" y1="552" x2="80" y2="552" stroke="#1b1b1b" stroke-width="2"/>
-      <text lang="ko" class="sub" x="92" y="558" font-size="17">미팅마다</text>
-      <text lang="en" class="sub" x="92" y="558" font-size="17">every meeting</text>
-      <line x1="240" y1="552" x2="300" y2="552" stroke="#1b1b1b" stroke-width="2" stroke-dasharray="8 6"/>
-      <text lang="ko" class="sub" x="312" y="558" font-size="17">조건이 맞을 때만</text>
-      <text lang="en" class="sub" x="312" y="558" font-size="17">only when the condition holds</text>
+    <g class="legend">
+      <rect class="box" x="400" y="34" width="34" height="22" rx="4"/>
+      <text lang="ko" class="sub" x="446" y="53" font-size="20">처리 단계</text>
+      <text lang="en" class="sub" x="446" y="53" font-size="20">step</text>
+      <rect class="box data" x="660" y="34" width="34" height="22" rx="0"/>
+      <text lang="ko" class="sub" x="706" y="53" font-size="20">기록 파일</text>
+      <text lang="en" class="sub" x="706" y="53" font-size="20">record file</text>
+      <line x1="400" y1="100" x2="440" y2="100" stroke="#1b1b1b" stroke-width="3.5"/>
+      <text lang="ko" class="sub" x="446" y="107" font-size="20">미팅마다</text>
+      <text lang="en" class="sub" x="446" y="107" font-size="20">every meeting</text>
+      <line x1="660" y1="100" x2="700" y2="100" stroke="#1b1b1b" stroke-width="2" stroke-dasharray="8 6"/>
+      <text lang="ko" class="sub" x="706" y="107" font-size="20">조건이 맞을 때만</text>
+      <text lang="en" class="sub" x="706" y="107" font-size="20">only if the condition holds</text>
     </g>
   </svg>
 </template>
@@ -214,52 +243,52 @@ svg .edge.opt{stroke-dasharray:8 6}
 <!-- 확대 상세도: 미팅 뒤(④) 결정 종류별로 쓰는 위치 -->
 <template id="diagram-after-detail">
   <svg viewBox="0 0 1000 520" role="img" aria-label="after-meeting routing">
-    <text lang="ko" class="label" x="20" y="50" font-size="19">미팅에서 나온 것</text>
-    <text lang="en" class="label" x="20" y="50" font-size="19">What came out of the meeting</text>
-    <text class="label new" x="640" y="50" text-anchor="middle" font-size="19">note.md</text>
-    <text class="label c1" x="860" y="50" text-anchor="middle" font-size="19">GOAL.md</text>
+    <text lang="ko" class="label" x="20" y="50" font-size="22">미팅에서 나온 것</text>
+    <text lang="en" class="label" x="20" y="50" font-size="22">What came out of the meeting</text>
+    <text class="label new" x="640" y="50" text-anchor="middle" font-size="22">note.md</text>
+    <text class="label c1" x="860" y="50" text-anchor="middle" font-size="22">GOAL.md</text>
 
-    <text lang="ko" class="name" x="20" y="122" font-size="21">목표·달성 기준·일정 자체를 조정</text>
-    <text lang="en" class="name" x="20" y="122" font-size="21">Goal, criteria or schedule adjusted</text>
-    <text lang="ko" class="sub" x="20" y="150" font-size="16">예: 달성 기준을 seed 3개에서 5개로</text>
-    <text lang="en" class="sub" x="20" y="150" font-size="16">e.g. criterion moves from 3 seeds to 5</text>
-    <rect class="cell1" x="614" y="96" width="52" height="52" rx="4"/>
-    <text lang="ko" class="sub" x="640" y="176" text-anchor="middle" font-size="15">정한 것</text>
-    <text lang="en" class="sub" x="640" y="176" text-anchor="middle" font-size="15">decisions</text>
-    <rect class="cell1 crit" x="834" y="96" width="52" height="52" rx="4"/>
-    <text lang="ko" class="sub crit" x="860" y="176" text-anchor="middle" font-size="15">문장 교체</text>
-    <text lang="en" class="sub crit" x="860" y="176" text-anchor="middle" font-size="15">sentence replaced</text>
+    <text lang="ko" class="name" x="20" y="118" font-size="24">목표·달성 기준·일정 자체를 조정</text>
+    <text lang="en" class="name" x="20" y="118" font-size="24">Goal, criteria or dates adjusted</text>
+    <text lang="ko" class="sub" x="20" y="150" font-size="21">예: 달성 기준을 seed 3개에서 5개로</text>
+    <text lang="en" class="sub" x="20" y="150" font-size="21">e.g. criterion moves from 3 seeds to 5</text>
+    <rect class="cell1" x="614" y="90" width="52" height="52" rx="4"/>
+    <text lang="ko" class="sub" x="640" y="172" text-anchor="middle" font-size="21">정한 것</text>
+    <text lang="en" class="sub" x="640" y="172" text-anchor="middle" font-size="21">decisions</text>
+    <rect class="cell1 crit" x="834" y="90" width="52" height="52" rx="4"/>
+    <text lang="ko" class="sub crit" x="860" y="172" text-anchor="middle" font-size="21">문장 교체</text>
+    <text lang="en" class="sub crit" x="860" y="172" text-anchor="middle" font-size="21">text replaced</text>
 
-    <line x1="20" y1="200" x2="980" y2="200" stroke="#d6d6d6"/>
+    <line x1="20" y1="196" x2="980" y2="196" stroke="#d6d6d6"/>
 
-    <text lang="ko" class="name" x="20" y="262" font-size="21">방법·구현·실험 설계를 변경</text>
-    <text lang="en" class="name" x="20" y="262" font-size="21">Method, code or experiment changed</text>
-    <text lang="ko" class="sub" x="20" y="290" font-size="16">예: 평가 지표를 바꾸기로 함</text>
-    <text lang="en" class="sub" x="20" y="290" font-size="16">e.g. switch the evaluation metric</text>
-    <rect class="cell1" x="614" y="236" width="52" height="52" rx="4"/>
-    <text lang="ko" class="sub" x="640" y="316" text-anchor="middle" font-size="15">정한 것</text>
-    <text lang="en" class="sub" x="640" y="316" text-anchor="middle" font-size="15">decisions</text>
-    <rect class="cell0" x="834" y="236" width="52" height="52" rx="4"/>
-    <text lang="ko" class="sub" x="860" y="316" text-anchor="middle" font-size="15">그대로</text>
-    <text lang="en" class="sub" x="860" y="316" text-anchor="middle" font-size="15">unchanged</text>
+    <text lang="ko" class="name" x="20" y="258" font-size="24">방법·구현·실험 설계를 변경</text>
+    <text lang="en" class="name" x="20" y="258" font-size="24">Method, code or experiment changed</text>
+    <text lang="ko" class="sub" x="20" y="290" font-size="21">예: 평가 지표를 바꾸기로 함</text>
+    <text lang="en" class="sub" x="20" y="290" font-size="21">e.g. switch the evaluation metric</text>
+    <rect class="cell1" x="614" y="230" width="52" height="52" rx="4"/>
+    <text lang="ko" class="sub" x="640" y="312" text-anchor="middle" font-size="21">정한 것</text>
+    <text lang="en" class="sub" x="640" y="312" text-anchor="middle" font-size="21">decisions</text>
+    <rect class="cell0" x="834" y="230" width="52" height="52" rx="4"/>
+    <text lang="ko" class="sub" x="860" y="312" text-anchor="middle" font-size="21">그대로</text>
+    <text lang="en" class="sub" x="860" y="312" text-anchor="middle" font-size="21">unchanged</text>
 
-    <line x1="20" y1="340" x2="980" y2="340" stroke="#d6d6d6"/>
+    <line x1="20" y1="336" x2="980" y2="336" stroke="#d6d6d6"/>
 
-    <text lang="ko" class="name" x="20" y="402" font-size="21">Claude가 제안했지만 사용자가 정하지 않음</text>
-    <text lang="en" class="name" x="20" y="402" font-size="21">Proposed by Claude, not decided</text>
-    <rect class="cell1" x="614" y="376" width="52" height="52" rx="4"/>
-    <text lang="ko" class="sub" x="640" y="456" text-anchor="middle" font-size="15">보류한 질문</text>
-    <text lang="en" class="sub" x="640" y="456" text-anchor="middle" font-size="15">deferred</text>
-    <rect class="cell0" x="834" y="376" width="52" height="52" rx="4"/>
-    <text lang="ko" class="sub" x="860" y="456" text-anchor="middle" font-size="15">그대로</text>
-    <text lang="en" class="sub" x="860" y="456" text-anchor="middle" font-size="15">unchanged</text>
+    <text lang="ko" class="name" x="20" y="398" font-size="24">Claude가 제안했지만 사용자가 정하지 않음</text>
+    <text lang="en" class="name" x="20" y="398" font-size="24">Proposed by Claude, not decided</text>
+    <rect class="cell1" x="614" y="370" width="52" height="52" rx="4"/>
+    <text lang="ko" class="sub" x="640" y="452" text-anchor="middle" font-size="21">보류한 질문</text>
+    <text lang="en" class="sub" x="640" y="452" text-anchor="middle" font-size="21">deferred</text>
+    <rect class="cell0" x="834" y="370" width="52" height="52" rx="4"/>
+    <text lang="ko" class="sub" x="860" y="452" text-anchor="middle" font-size="21">그대로</text>
+    <text lang="en" class="sub" x="860" y="452" text-anchor="middle" font-size="21">unchanged</text>
 
-    <rect class="cell1" x="20" y="486" width="22" height="22" rx="3"/>
-    <text lang="ko" class="sub" x="52" y="503" font-size="15">기록함</text>
-    <text lang="en" class="sub" x="52" y="503" font-size="15">written</text>
-    <rect class="cell0" x="160" y="486" width="22" height="22" rx="3"/>
-    <text lang="ko" class="sub" x="192" y="503" font-size="15">기록하지 않음</text>
-    <text lang="en" class="sub" x="192" y="503" font-size="15">not written</text>
+    <rect class="cell1" x="20" y="486" width="24" height="24" rx="3"/>
+    <text lang="ko" class="sub" x="54" y="506" font-size="21">기록함</text>
+    <text lang="en" class="sub" x="54" y="506" font-size="21">written</text>
+    <rect class="cell0" x="170" y="486" width="24" height="24" rx="3"/>
+    <text lang="ko" class="sub" x="204" y="506" font-size="21">기록하지 않음</text>
+    <text lang="en" class="sub" x="204" y="506" font-size="21">not written</text>
   </svg>
 </template>
 
@@ -293,8 +322,8 @@ svg .edge.opt{stroke-dasharray:8 6}
     <div class="side">
       <ul class="points small">
         <li><span lang="ko"><strong>사용자:</strong> 연구를 진행하는 사람 1명</span><span lang="en"><strong>User:</strong> one person running the research</span></li>
-        <li><span lang="ko"><strong>만드는 것:</strong> GOAL.md, 미팅 자료, 미팅 노트, 발표 자료</span><span lang="en"><strong>Produces:</strong> GOAL.md, meeting slides, notes, presentation</span></li>
-        <li><span lang="ko"><strong>이 자료의 범위:</strong> 진하게 표시한 노트 작성(④)과 GOAL.md</span><span lang="en"><strong>Scope of this deck:</strong> writing the note (④) and GOAL.md, shown dark</span></li>
+        <li><span lang="ko"><strong>만드는 것:</strong> GOAL.md, 미팅 자료,<br>미팅 노트, 발표 자료</span><span lang="en"><strong>Produces:</strong> GOAL.md, meeting slides,<br>notes, presentation</span></li>
+        <li><span lang="ko"><strong>이 자료의 범위:</strong> 진하게 표시한<br>노트 작성(④)과 GOAL.md</span><span lang="en"><strong>Scope of this deck:</strong> writing the note (④)<br>and GOAL.md, shown dark</span></li>
       </ul>
     </div>
   </div>
@@ -318,17 +347,26 @@ svg .edge.opt{stroke-dasharray:8 6}
   <div class="source"><span lang="ko">출처: skills/*/SKILL.md</span><span lang="en">Source: skills/*/SKILL.md</span></div>
 </section>
 
-<section class="slide">
+<section class="slide" data-layout="method">
   <div class="eyebrow"><span lang="ko">동작 설명 1/3</span><span lang="en">How it works 1/3</span></div>
   <h2 class="title">
     <span lang="ko">drive-project-forward 미팅 주기 전체 구조 (스킬 3개, 기록 2개)</span>
-    <span lang="en">Full meeting cycle of drive-project-forward (3 skills, 2 records read by later steps)</span>
+    <span lang="en">Full meeting cycle of drive-project-forward (3 skills, 2 records)</span>
   </h2>
   <p class="lead">
-    <span lang="ko"><span class="new">미팅 노트</span>가 다음 미팅 자료의 리마인드가 되어 미팅이 한 주기로 이어지고,<br><span class="c1">GOAL.md</span>는 주기 밖의 기준으로 읽히다가 사용자가 목표를 조정할 때만 바뀐다.</span>
-    <span lang="en">The <span class="new">note</span> becomes the reminder in the next meeting's slides, closing the cycle;<br><span class="c1">GOAL.md</span> sits outside it as the reference and changes only when the user adjusts the goal.</span>
+    <span lang="ko"><span class="new">미팅 노트</span>가 다음 미팅 자료의 리마인드가 되어 미팅이 한 주기로 이어지고,<br><span class="c1">GOAL.md</span>는 사용자가 목표를 조정할 때만 바뀐다.</span>
+    <span lang="en">The <span class="new">note</span> becomes the reminder in the next meeting's slides, closing the cycle;<br><span class="c1">GOAL.md</span> changes only when the user adjusts the goal.</span>
   </p>
-  <div class="figure" data-diagram="cycle" data-steps="goal;goalmd;walk;meeting;after,note"></div>
+  <div class="method">
+    <div class="figure" data-diagram="cycle" data-steps="goal;goalmd;walk;meeting;after,note"></div>
+    <div class="narration">
+      <p data-only="1"><span lang="ko"><span class="step-name">① 목표 작성 (goal)</span>연구를 시작할 때 goal 스킬이<br>사용자에게 배경과 목표를 묻는다.<br>답은 GOAL.md에 처음 한 번 쓴다.</span><span lang="en"><span class="step-name">① Set goal (goal)</span>When the research starts, the goal skill<br>asks the user for the background and goal.<br>It writes the answers to GOAL.md once.</span></p>
+      <p data-only="2"><span lang="ko"><span class="step-name"><span class="c1">GOAL.md</span></span>배경, 목표, 달성 기준, 일정을 담는다.<br>이후 단계는 GOAL.md의 달성 기준으로<br>결과를 판단한다.</span><span lang="en"><span class="step-name"><span class="c1">GOAL.md</span></span>Holds the background, goal,<br>success criteria and schedule.<br>Later steps judge results by its criteria.</span></p>
+      <p data-only="3"><span lang="ko"><span class="step-name">② 자료 준비 (meet)</span>meet 스킬이 GOAL.md, 미팅 노트,<br>git log, run 기록을 읽는다.<br>읽은 내용으로 설명 자료(.md)를 쓰고<br>슬라이드(.html)로 만든다.</span><span lang="en"><span class="step-name">② Make slides (meet)</span>The meet skill reads GOAL.md, the notes,<br>the git log and the run records.<br>It writes the material (.md)<br>and turns it into slides (.html).</span></p>
+      <p data-only="4"><span lang="ko"><span class="step-name">③ 미팅</span>사용자가 설명 자료로<br>방법과 결과를 확인한다.<br>그다음 바꿀 것과 할 일을 정한다.</span><span lang="en"><span class="step-name">③ Meeting</span>The user reads the slides<br>to check the method and results,<br>then decides what to change and do.</span></p>
+      <p data-only="5"><span lang="ko"><span class="step-name">④ 노트 작성 (meet)</span>meet 스킬이 사용자가 정한 것을<br><span class="new">미팅 노트</span>(note.md)에 쓴다.<br>다음 미팅의 ② 자료 준비가<br>note.md를 리마인드로 읽는다.</span><span lang="en"><span class="step-name">④ Write note (meet)</span>The meet skill writes the decisions<br>to the <span class="new">note</span> (note.md).<br>The next ② Make slides<br>reads the note as its reminder.</span></p>
+    </div>
+  </div>
   <div class="source"><span lang="ko">출처: skills/*/SKILL.md</span><span lang="en">Source: skills/*/SKILL.md</span></div>
 </section>
 
@@ -368,19 +406,11 @@ svg .edge.opt{stroke-dasharray:8 6}
     <span lang="ko">방법이나 구현을 바꾸는 결정은 <span class="new">미팅 노트</span>에만 남고, <span class="crit">GOAL.md는 사용자가 목표 자체를 조정할 때만 바뀐다</span>.</span>
     <span lang="en">Decisions that change the method or code stay in the <span class="new">note</span>;<br><span class="crit">GOAL.md changes only when the user adjusts the goal itself</span>.</span>
   </p>
-  <div class="zoom">
-    <div class="figure" data-diagram="after-detail"></div>
-    <div class="side">
-      <div class="locator">
-        <div data-diagram="cycle" data-focus="after"></div>
-        <div class="caption"><span lang="ko">전체 주기에서 노트 작성(④)의 위치</span><span lang="en">Position of writing the note (④) in the cycle</span></div>
-      </div>
-      <ul class="points small">
-        <li><span lang="ko"><strong>우선순위:</strong> 목표가 위에 있고,<br>구현은 목표를 따른다</span><span lang="en"><strong>Priority:</strong> the goal sits above;<br>the implementation follows it</span></li>
-        <li data-step="2"><span lang="ko"><strong><span class="c1">GOAL.md</span> 수정:</strong> 문장을 교체하고,<br>이력을 쓰지 않는다</span><span lang="en"><strong>Editing <span class="c1">GOAL.md</span>:</strong> replace sentences,<br>keep no history</span></li>
-      </ul>
-    </div>
-  </div>
+  <div class="figure" data-diagram="cycle" data-focus="after,note,goalmd" data-zoom="740,410,250,140" data-detail="after-detail"></div>
+  <ul class="points small">
+    <li><span lang="ko"><strong>우선순위:</strong> 목표가 위에 있고, 구현은 목표를 따른다</span><span lang="en"><strong>Priority:</strong> the goal sits above; the implementation follows it</span></li>
+    <li data-step="2"><span lang="ko"><strong><span class="c1">GOAL.md</span> 수정:</strong> 문장을 교체하고, 이력을 쓰지 않는다</span><span lang="en"><strong>Editing <span class="c1">GOAL.md</span>:</strong> replace sentences, keep no history</span></li>
+  </ul>
   <div class="source"><span lang="ko">출처: skills/meet/SKILL.md, skills/goal/SKILL.md</span><span lang="en">Source: skills/meet/SKILL.md, skills/goal/SKILL.md</span></div>
 </section>
 
@@ -402,7 +432,8 @@ svg .edge.opt{stroke-dasharray:8 6}
 </section>
 
 </main>
-<div class="counter"></div>
+<button class="counter" type="button" title="장 목록 (G)"></button>
+<div class="toc" hidden></div>
 <button class="langbtn" type="button" title="L 키로도 바꾼다">한국어 · English</button>
 
 <script>
@@ -429,7 +460,120 @@ document.querySelectorAll('[data-diagram]').forEach(el => {
   if (focus.length) el.querySelectorAll('[data-part]').forEach(p => {
     if (!p.dataset.part.split(/\s+/).some(x => focus.includes(x))) p.classList.add('dim')
   })
+  if (el.dataset.zoom && el.dataset.detail) zoomCompose(el)
 })
+
+
+// 확대 그림: .figure에 data-diagram(전체 그림), data-zoom(x,y,w,h), data-detail(확대도), data-focus를 붙인다.
+// 왼쪽에 전체 그림을 줄여 그리고 x,y,w,h(전체 그림의 viewBox 좌표) 영역에 테두리를 친 뒤, 연결선으로 오른쪽 확대도에 잇는다.
+// data-focus는 전체 그림에, data-steps는 확대도에 적용한다.
+function zoomCompose(el) {
+  const NS = 'http://www.w3.org/2000/svg'
+  const whole = el.querySelector('svg'), dt = document.getElementById('diagram-' + el.dataset.detail)
+  if (!whole || !dt) { el.textContent = 'missing diagram: ' + el.dataset.detail; return }
+  const detail = dt.content.querySelector('svg').cloneNode(true)
+  const vb = s => s.getAttribute('viewBox').split(/[\s,]+/).map(Number)
+  const [, , wW, wH] = vb(whole), [, , dW, dH] = vb(detail)
+  const [zx, zy, zw, zh] = el.dataset.zoom.split(',').map(Number)
+  const L = 380, G = 50, R = 1000 - L - G, ws = L / wW, lh = wH * ws, rh = dH * R / dW, H = Math.max(lh, rh)
+  const out = document.createElementNS(NS, 'svg')
+  out.setAttribute('viewBox', `0 0 1000 ${H}`)
+  const put = (s, cls, x, y, w, h) => {
+    s.classList.add(cls)
+    for (const [k, v] of Object.entries({ x, y, width: w, height: h })) s.setAttribute(k, v)
+    s.setAttribute('style', `width:${w}px;height:${h}px`)
+    out.appendChild(s)
+  }
+  const mk = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); out.appendChild(e) }
+  const wy = (H - lh) / 2, dy = (H - rh) / 2
+  mk('rect', { x: L + G, y: dy, width: R, height: rh, class: 'zoom-panel' })
+  put(whole, 'whole', 0, wy, L, lh)
+  put(detail, 'detail', L + G, dy, R, rh)
+  const rx = zx * ws, ry = wy + zy * ws, rw = zw * ws, rhh = zh * ws
+  mk('rect', { x: rx, y: ry, width: rw, height: rhh, class: 'zoom-frame' })
+  mk('line', { x1: rx + rw, y1: ry, x2: L + G, y2: dy, class: 'zoom-line' })
+  mk('line', { x1: rx + rw, y1: ry + rhh, x2: L + G, y2: dy + rh, class: 'zoom-line' })
+  el.appendChild(out)
+}
+
+// 수식: 글과 그림의 \( … \) 안을 TeX 표기로 읽어 그린다. 문자는 이탤릭, _는 아래 첨자, ^는 위 첨자이다.
+// \mathrm{…}과 \text{…}는 바로 선 글자, \tilde{…}·\hat{…}·\bar{…}는 글자 위 기호, \top·\ell·\alpha 같은 명령은 대응하는 기호이다.
+// 같은 글꼴을 작게 해서 위치를 옮기므로 유니코드 첨자 글자(ⱼ, ᵀ)처럼 다른 글꼴로 바뀌어 간격이 벌어지지 않는다.
+const TEX_SYM = { top: '⊤', ell: 'ℓ', alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε', eta: 'η', theta: 'θ', lambda: 'λ',
+  mu: 'μ', pi: 'π', rho: 'ρ', sigma: 'σ', tau: 'τ', phi: 'φ', psi: 'ψ', omega: 'ω', Sigma: 'Σ', Delta: 'Δ', Omega: 'Ω',
+  times: '×', cdot: '·', le: '≤', ge: '≥', leq: '≤', geq: '≥', ne: '≠', approx: '≈', infty: '∞', sum: '∑', prod: '∏', in: '∈',
+  to: '→', rightarrow: '→', leftarrow: '←', gets: '←', odot: '⊙', oplus: '⊕', otimes: '⊗', ldots: '…', cdots: '⋯', partial: '∂',
+  nabla: '∇', sqrt: '√', prime: '′', max: 'max', min: 'min', exp: 'exp', log: 'log', ',': '\u2009', ';': '\u2005', quad: '\u2003', ' ': ' ' }
+// 관계 기호와 화살표 양옆에는 간격을 넣는다
+const REL = new Set(['=', '<', '>', '≤', '≥', '≠', '≈', '←', '→', '∈'])
+function texRuns(src) {
+  // 결과: 글자 묶음 {t, it(이탤릭), lv(첨자 단계 배열: -1 아래, 1 위)}
+  const out = []; let i = 0
+  const push = (t, it, lv) => { if (!t) return; const l = out[out.length - 1], k = lv.join(); if (l && l.it === it && l.lv.join() === k) l.t += t; else out.push({ t, it, lv }) }
+  const cmd = () => { const m = /^[A-Za-z]+|^./.exec(src.slice(i)); i += m ? m[0].length : 0; return m ? m[0] : '' }
+  const braced = () => { if (src[i] !== '{') return src[i++] || ''; let d = 0, j = i; for (; j < src.length; j++) { if (src[j] === '{') d++; else if (src[j] === '}' && !--d) break } const t = src.slice(i + 1, j); i = j + 1; return t }
+  const atom = (lv) => {
+    const c = src[i]
+    if (c === '{') { i++; seq(lv, true); return }
+    if (c === '\\') { i++; const m = cmd()
+      if (m === 'mathrm' || m === 'text' || m === 'operatorname') push(braced(), false, lv)
+      else if (m === 'tilde' || m === 'hat' || m === 'bar') {
+        const inner = texRuns(braced()), t = inner.map(r => r.t).join('')
+        push(t + { tilde: '̃', hat: '̂', bar: '̄' }[m], inner.some(r => r.it), lv) }
+      else { const t = TEX_SYM[m] ?? m; push(REL.has(t) ? '\u2005' + t + '\u2005' : t, false, lv) }
+      return }
+    i++
+    if (c === ' ') return  // TeX처럼 수식 안의 띄어쓰기는 무시한다. 간격은 \, \; \quad로 넣는다
+    const t = c === '-' ? '−' : c
+    push(REL.has(t) || '+−'.includes(t) && lv.length === 0 ? '\u2005' + t + '\u2005' : t, /[A-Za-z]/.test(c), lv)
+  }
+  const seq = (lv, inBrace) => {
+    while (i < src.length) {
+      const c = src[i]
+      if (c === '}') { i++; if (inBrace) return; continue }
+      if (c === '_' || c === '^') { i++; atom([...lv, c === '_' ? -1 : 1]); continue }
+      atom(lv)
+    }
+  }
+  seq([], false)
+  return out
+}
+function texify(root) {
+  const NS = 'http://www.w3.org/2000/svg', re = /\\\((.+?)\\\)/g
+  const nodes = []; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  while (w.nextNode()) if (w.currentNode.nodeValue.includes('\\(') && !w.currentNode.parentNode.closest('script,style,template')) nodes.push(w.currentNode)
+  nodes.forEach(n => {
+    const svg = n.parentNode.closest('text'), frag = document.createDocumentFragment(), str = n.nodeValue
+    const fs = svg ? (parseFloat(svg.getAttribute('font-size')) || parseFloat(getComputedStyle(svg).fontSize) || 20) : 0
+    let last = 0, shift = 0, m
+    const plain = (t, reset) => { if (!t && !reset) return; if (!svg) { frag.append(t); return }
+      const e = document.createElementNS(NS, 'tspan'); if (reset) e.setAttribute('dy', (-shift).toFixed(1)); shift = 0; e.textContent = t || '​'; frag.append(e) }
+    re.lastIndex = 0
+    while ((m = re.exec(str))) {
+      plain(str.slice(last, m.index), false)
+      texRuns(m[1]).forEach(r => {
+        if (svg) {
+          // 첨자 단계마다 크기는 0.7배, 기준선은 아래 첨자 0.22, 위 첨자 0.42(그 단계 글자 크기 기준)만큼 옮긴다
+          let to = 0, sc = 1
+          r.lv.forEach(d => { to += (d < 0 ? 0.22 : -0.42) * sc * fs; sc = Math.max(0.5, sc * 0.7) })
+          const e = document.createElementNS(NS, 'tspan')
+          e.setAttribute('class', r.it ? 'math' : 'mathup')
+          if (sc !== 1) e.setAttribute('font-size', (sc * fs).toFixed(1))
+          if (Math.abs(to - shift) > 0.01) { e.setAttribute('dy', (to - shift).toFixed(1)); shift = to }
+          e.textContent = r.t; frag.append(e)
+        } else {
+          let e = document.createElement(r.it ? 'i' : 'span'); e.className = r.it ? 'math' : 'mathup'; e.textContent = r.t
+          for (let k = r.lv.length - 1; k >= 0; k--) { const w2 = document.createElement(r.lv[k] < 0 ? 'sub' : 'sup'); w2.className = 'tex'; w2.append(e); e = w2 }
+          frag.append(e)
+        }
+      })
+      last = re.lastIndex
+    }
+    plain(str.slice(last), !!(svg && shift))
+    n.parentNode.replaceChild(frag, n)
+  })
+}
+texify(document.querySelector('.deck') || document.body)
 
 // 언어 전환: ?lang=en|ko, 저장된 선택, 기본 ko 순서로 정한다. L 키나 왼쪽 아래 버튼으로 바꾼다.
 const btn = document.querySelector('.langbtn')
@@ -448,20 +592,22 @@ btn.addEventListener('click', e => { e.stopPropagation(); toggleLang() })
 const slides = [...document.querySelectorAll('.slide')]
 const counter = document.querySelector('.counter')
 
-// 단계 표시: 요소의 data-step="k"는 k단계부터 보인다. 구조도 상자의 data-steps="부분;부분,부분"은
+// 단계 표시: 요소의 data-step="k"는 k단계부터 보이고, data-only="k"는 k단계에만 보인다. 구조도 상자의 data-steps="부분;부분,부분"은
 // 단계마다 그 부분만 진하게 남긴다(i번째 항목이 i단계). 한 장의 단계 수는 둘 중 큰 값이다.
 const stepsOf = s => {
   let n = 1
   s.querySelectorAll('[data-step]').forEach(e => { n = Math.max(n, parseInt(e.dataset.step) || 1) })
   s.querySelectorAll('[data-steps]').forEach(e => { n = Math.max(n, e.dataset.steps.split(';').length) })
+  s.querySelectorAll('[data-only]').forEach(e => { n = Math.max(n, parseInt(e.dataset.only) || 1) })
   return n
 }
 function applyStep(s, k) {
   s.querySelectorAll('[data-step]').forEach(e => e.classList.toggle('step-hidden', (parseInt(e.dataset.step) || 1) > k))
+  s.querySelectorAll('[data-only]').forEach(e => e.classList.toggle('step-off', (parseInt(e.dataset.only) || 1) !== k))
   s.querySelectorAll('[data-steps]').forEach(fig => {
     const list = fig.dataset.steps.split(';').map(x => x.split(',').map(t => t.trim()).filter(Boolean))
     const focus = list[Math.min(k, list.length) - 1] || []
-    fig.querySelectorAll('[data-part]').forEach(p => p.classList.toggle('dim', focus.length > 0 && !p.dataset.part.split(/\s+/).some(x => focus.includes(x))))
+    fig.querySelectorAll('[data-part]').forEach(p => !p.closest('.whole') && p.classList.toggle('dim', focus.length > 0 && !p.dataset.part.split(/\s+/).some(x => focus.includes(x))))
   })
 }
 
@@ -477,14 +623,43 @@ function show(i, k = 1) {
 }
 const next = () => step < stepsOf(slides[cur]) ? show(cur, step + 1) : show(cur + 1, 1)
 const prev = () => step > 1 ? show(cur, step - 1) : show(cur - 1, 'last')
+// 장 바로가기: 장 번호를 누르거나 G 키를 누르면 장 목록이 열린다. 숫자를 치고 Enter를 누르면 그 장으로 간다.
+const toc = document.querySelector('.toc')
+const titleText = s => {
+  const t = s.querySelector('.title'); if (!t) return ''
+  const c = (t.querySelector(`:scope > [lang="${document.documentElement.dataset.lang}"]`) || t).cloneNode(true)
+  c.querySelectorAll('br').forEach(b => b.replaceWith(' '))
+  return c.textContent.replace(/\s+/g, ' ').trim()
+}
+function openToc() {
+  toc.innerHTML = ''
+  slides.forEach((s, k) => {
+    const b = document.createElement('button'); b.type = 'button'
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = k + 1
+    b.append(n, titleText(s))
+    if (k === cur) b.classList.add('cur')
+    b.addEventListener('click', e => { e.stopPropagation(); toc.hidden = true; show(k) })
+    toc.appendChild(b)
+  })
+  toc.hidden = false
+  toc.querySelector('.cur')?.scrollIntoView({ block: 'nearest' })
+}
+counter.addEventListener('click', e => { e.stopPropagation(); toc.hidden ? openToc() : (toc.hidden = true) })
+toc.addEventListener('click', e => e.stopPropagation())
+let typed = ''
 addEventListener('keydown', e => {
+  if (e.key === 'Escape') { toc.hidden = true; typed = ''; return }
+  if (e.key === 'g' || e.key === 'G') { toc.hidden ? openToc() : (toc.hidden = true); return }
+  if (/^[0-9]$/.test(e.key)) { typed += e.key; return }
+  if (e.key === 'Enter' && typed) { show(parseInt(typed) - 1); typed = ''; toc.hidden = true; return }
+  typed = ''
   if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) next()
   else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) prev()
   else if (e.key === 'Home') show(0)
   else if (e.key === 'End') show(slides.length - 1, 'last')
   else if (e.key === 'l' || e.key === 'L') toggleLang()
 })
-addEventListener('click', e => (e.clientX > innerWidth / 2 ? next() : prev()))
+addEventListener('click', e => { if (!toc.hidden) { toc.hidden = true; return } e.clientX > innerWidth / 2 ? next() : prev() })
 show((parseInt(location.hash.slice(1)) || 1) - 1)
 
 // 인쇄·PDF: 단계가 있는 장은 단계마다 별개의 쪽이 되도록 복제한다. 인쇄가 끝나면 복제본을 지운다.
@@ -515,7 +690,9 @@ if (new URLSearchParams(location.search).get('steps') === 'pages') expandSteps()
 // 확인 모드: 주소에 ?check가 있으면 장마다 재고 결과를 body에 남긴다 (check_deck.py가 읽는다)
 //   data-overflow: 내용이 장을 넘친 장 번호
 //   data-diagram:  구조도 문제 "장|종류|내용" 목록(;로 구분). 종류: text-out(글자가 상자 밖), text-overlap(글자끼리 겹침),
-//                  label-on-box(라벨이 다른 상자와 겹침), edge-cross(화살표가 연결 대상이 아닌 상자를 가로지름), out-of-figure(그림 밖)
+//                  label-on-box(라벨이 다른 상자와 겹침), edge-cross(화살표가 연결 대상이 아닌 상자를 가로지름), out-of-figure(그림 밖),
+//                  wrap(<br> 없이 줄이 바뀐 글),
+//                  small-text(화면에 그려진 글자 크기가 장 너비의 1.0% 미만. 위치 표시 그림 .locator와 확대 그림의 .whole은 제외)
 function diagramIssues(s, k) {
   const out = []
   const vis = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(el).display !== 'none' }
@@ -526,6 +703,12 @@ function diagramIssues(s, k) {
     const sr = svg.getBoundingClientRect()
     const boxes = [...svg.querySelectorAll('g[data-part]')].map(g => ({ g, part: g.dataset.part.split(/\s+/), rect: g.querySelector('rect.box') })).filter(b => b.rect && vis(b.rect))
     const texts = [...svg.querySelectorAll('text')].filter(vis)
+    // 작은 글자: 논문 그림처럼 화면과 인쇄에서 읽히는 크기인지 본다
+    // 위치 표시 그림(.locator)과 확대 그림 안의 줄인 전체 그림(.whole)은 제외한다
+    texts.filter(t => !t.closest('.locator, .whole')).forEach(t => {
+      const px = parseFloat(getComputedStyle(t).fontSize) * (t.getScreenCTM()?.a || 1)
+      if (px < s.clientWidth * 0.010) out.push([k, 'small-text', (px / s.clientWidth * 100).toFixed(2) + '% ' + txt(t)])
+    })
     // 글자가 자기 상자 밖으로 나감
     boxes.forEach(b => {
       const r = b.rect.getBoundingClientRect()
@@ -569,14 +752,33 @@ function diagramIssues(s, k) {
   })
   return out
 }
+// 의도하지 않은 줄바꿈: <br>로 정한 줄 수보다 실제 줄이 많은 글(제목, 메시지, 리캡, 불릿, 단계 설명)을 찾는다(원칙 5)
+function wrapIssues(s, k) {
+  const out = []
+  const shown = el => el.getClientRects().length > 0
+  s.querySelectorAll('.title, .lead, .recap, ul.points li, .narration [data-only]').forEach(el => {
+    if (!shown(el)) return
+    const cs = getComputedStyle(el), lh = parseFloat(cs.lineHeight)
+    if (!lh) return
+    const brs = [...el.querySelectorAll('br')].filter(shown).length
+    let h = el.getBoundingClientRect().height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+    el.querySelectorAll('.step-name').forEach(n => { if (shown(n)) h -= n.getBoundingClientRect().height + parseFloat(getComputedStyle(n).marginBottom) })
+    if (h > (brs + 1) * lh + lh * 0.5) out.push([k, 'wrap', (el.innerText || '').trim().replace(/\s+/g, ' ').slice(0, 30)])
+  })
+  return out
+}
 if (/[?&]check\b/.test(location.search)) {
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
     const bad = [], diag = []
     slides.forEach((s, k) => {
-      show(k, 'last')
-      const els = [s, ...s.querySelectorAll('.figure,.zoom,.side,ul.points,table')]
-      if (els.some(el => el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)) { s.classList.add('overflow'); bad.push(k + 1) }
-      diagramIssues(s, k + 1).forEach(d => diag.push(d))
+      // 단계마다 보이는 내용이 다르므로(data-only) 모든 단계를 잰다
+      for (let st = 1; st <= stepsOf(s); st++) {
+        show(k, st)
+        const els = [s, ...s.querySelectorAll('.figure,.zoom,.side,.method,.narration,ul.points,table')]
+        if (els.some(el => el.scrollHeight > el.clientHeight + 2 || el.scrollWidth > el.clientWidth + 2)) { s.classList.add('overflow'); if (!bad.includes(k + 1)) bad.push(k + 1) }
+        diagramIssues(s, k + 1).forEach(d => diag.push(d))
+        wrapIssues(s, k + 1).forEach(d => diag.push(d))
+      }
     })
     show(0)
     document.body.dataset.overflow = bad.join(',') || 'none'

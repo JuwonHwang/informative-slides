@@ -13,8 +13,11 @@ Per deck:
   - cover first, summary second, closing last; the summary has a .recap
   - lang="ko" and lang="en" elements pair up
   - every data-diagram has a <template id="diagram-..."> definition
+  - method slides (data-layout="method"): one narration per figure step, 3 sentences / 45 words per step
+  - figure text: every symbol (Q, Kᵀ, S₁₁) appears once with its plain name in the same figure
   - prints the titles in order so the storyline can be read on its own
-  - with Chrome/Chromium/Edge installed, renders ?check and reports slides that overflow
+  - with Chrome/Chromium/Edge installed, renders ?check at every step and reports slides that overflow,
+    diagram problems, figure text smaller than 1.0% of the slide width, and lines that wrap without <br>
 
 Exit code 1 when any ERROR is found.
 """
@@ -154,12 +157,15 @@ def browser_overflow(path):
         d = re.search(r'data-diagram="([^"]*)"', out)
         if d and d.group(1) not in ("none", ""):
             import html as _html
-            names = {"text-out": "text outside its box", "text-overlap": "texts overlap", "label-on-box": "label overlaps another box",
-                     "edge-cross": "arrow crosses a box it does not connect", "out-of-figure": "element outside the figure"}
+            names = {"text-out": "diagram: text outside its box", "text-overlap": "diagram: texts overlap",
+                     "label-on-box": "diagram: label overlaps another box",
+                     "edge-cross": "diagram: arrow crosses a box it does not connect", "out-of-figure": "diagram: element outside the figure",
+                     "small-text": "diagram: text smaller than 1.0% of the slide width (shown size first); enlarge the font, shorten the text or split the figure",
+                     "wrap": "line breaks where there is no <br>; break it at a meaning boundary yourself, shorten it, or split the slide"}
             for item in _html.unescape(d.group(1)).split(";"):
                 parts = item.split("|", 2)
                 if len(parts) == 3 and parts[0].isdigit():
-                    res.append((int(parts[0]), lang, f'diagram: {names.get(parts[1], parts[1])}: "{parts[2]}"'))
+                    res.append((int(parts[0]), lang, f'{names.get(parts[1], parts[1])}: "{parts[2]}"'))
     return res, None
 
 
@@ -216,7 +222,28 @@ def main():
             issues.append(("WARN", i, "summary has no .recap (why, what, how)"))
 
         is_src = lambda n: "source" in n.cls
-        body = text(s, is_src)
+        # 방법 설명 장: 단계 설명(.narration)은 분량을 따로 센다(원칙 8)
+        is_narr = lambda n: "narration" in n.cls
+        if layout == "method":
+            figs = [n for n in walk(s) if "data-steps" in n.attrs]
+            narr = [n for n in walk(s) if "data-only" in n.attrs]
+            if not figs:
+                issues.append(("WARN", i, 'method slide has no figure with data-steps; highlight the part each step explains'))
+            if not narr:
+                issues.append(("WARN", i, 'method slide has no .narration <p data-only="k">; write 2-3 sentences per step'))
+            n_fig = max((len(f.attrs["data-steps"].split(";")) for f in figs), default=0)
+            n_narr = len({n.attrs["data-only"] for n in narr})
+            if figs and narr and n_fig != n_narr:
+                issues.append(("WARN", i, f"figure has {n_fig} steps but the narration has {n_narr}; write one narration per step"))
+            for n in narr:
+                nt = text(n, lambda x: "step-name" in x.cls)
+                sents = len(re.findall(r"[.!?](?:\s|$)", nt))
+                w = len(nt.split())
+                if sents > 3 or w > 45:
+                    issues.append(("WARN", i, f'step {n.attrs["data-only"]} narration has {sents} sentences, {w} words (limit 3 sentences, 45 words); split the step'))
+                if not any("step-name" in x.cls for x in walk(n)):
+                    issues.append(("WARN", i, f'step {n.attrs["data-only"]} narration has no .step-name label'))
+        body = text(s, lambda n: is_src(n) or is_narr(n))
         words = len(body.split())
         lim = WORDS.get(layout, WORDS["default"])
         if words > lim and layout != "cover":
@@ -282,10 +309,28 @@ def main():
     en = len(re.findall(r'\blang="en"', body_html))
     if ko != en:
         issues.append(("ERROR", 0, f'lang="ko" ({ko}) and lang="en" ({en}) counts differ; every text needs both'))
-    used = set(re.findall(r'data-diagram="([^"]+)"', src))
+    used = set(re.findall(r'data-(?:diagram|detail)="([^"]+)"', src))
     defined = set(re.findall(r'<template id="diagram-([^"]+)"', src))
     for d in sorted(used - defined):
         issues.append(("ERROR", 0, f'data-diagram="{d}" has no <template id="diagram-{d}">'))
+
+    # 원칙 2·7: 그림 안의 기호(Q, Kᵀ, S₁₁)는 그림마다 한 번은 내용 이름과 함께 쓴다("질문 행렬 Q").
+    sym = re.compile(r"(?<![A-Za-z0-9가-힣×])([A-Z])[₀-₉ᵀ]*(?![A-Za-z0-9×])")
+    for tid, body in re.findall(r'<template id="diagram-([^"]+)">(.*?)</template>', src, re.S):
+        texts = [re.sub(r"\\[()]|\\(?:mathrm|text|top|tilde|hat|bar)|[{}^_]", " ", re.sub(r"<[^>]+>", "", t))
+                 for t in re.findall(r'<text(?![^>]*lang="en")[^>]*>(.*?)</text>', body, re.S)]
+        letters = sorted({m.group(1) for t in texts for m in sym.finditer(t)})
+        for L in letters:
+            named = any(re.search(r"[가-힣]{2,}[가-힣\s·]*\(?\s*" + L + r"(?![A-Za-z])", t) or
+                        re.search(L + r"[₀-₉ᵀ]*\s*[(（][^)）]*[가-힣]{2,}", t) for t in texts)
+            if not named:
+                issues.append(("WARN", 0, f'diagram-{tid}: symbol "{L}" has no plain name in the figure; write it once with its name, e.g. "<내용 이름> {L}"'))
+
+    # 수식 표기: 유니코드 첨자 글자는 덱 글꼴에 없어 다른 글꼴로 그려지고 간격이 벌어진다. \( K_j^{\top} \)로 쓴다
+    body_src = re.sub(r"<script.*?</script>|<style.*?</style>", "", src, flags=re.S)
+    uni = sorted(set(re.findall(r"[\u2080-\u209C\u1D2C-\u1D6A\u2C7C\u2070\u2071\u2074-\u207F]", body_src)))
+    if uni:
+        issues.append(("WARN", 0, f'Unicode sub/superscript letters {" ".join(uni)}; write math as \\( K_j^{{\\top}} \\) instead (they fall back to another font and leave gaps)'))
 
     if "--no-browser" not in sys.argv:
         over, note = browser_overflow(path)

@@ -21,6 +21,7 @@ button{font:inherit;cursor:pointer}
 .ctl select,.ctl input{font:inherit;font-size:13px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
 .ctl input{width:56px}
 .status{color:var(--muted);font-size:13px;margin-left:auto}
+.jump{font:inherit;font-size:13px;max-width:320px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
 .dl{padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:13px;text-decoration:none;cursor:pointer}
 .dl:hover{background:var(--soft)}
 .done{padding:7px 16px;border:0;border-radius:8px;background:var(--good);color:#fff;font-weight:700}
@@ -66,7 +67,8 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
 <body>
 <div class="bar">
   <span class="name"></span>
-  <div class="nav"><button class="prev" title="이전 (←)">◀</button><span class="pos">–</span><button class="next" title="다음 (→)">▶</button></div>
+  <div class="nav"><button class="prev" title="이전 (←)">◀</button><select class="jump" title="장 바로가기">
+<option>–</option></select><button class="next" title="다음 (→)">▶</button></div>
   <label class="toggle"><input type="checkbox" class="selmode" checked> 요소 선택</label>
   <label class="ctl" title="화면과 PDF에 적용한다. 덱 파일은 바꾸지 않는다">비율
     <select class="ratio"><option value="">덱 설정</option><option>16:9</option><option>16:10</option><option>4:3</option><option>3:2</option><option>1:1</option><option>21:9</option></select></label>
@@ -126,7 +128,19 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
   let doc = null, win = null, slides = [], cur = -1, sel = null, hover = null, flashEl = null, flashT = 0;
   let db = {}, saveT = 0;
 
-  const titleOf = (s) => { const t = s.querySelector('.title, h1, h2, h3'); return t ? clean(t.innerText || t.textContent) || '(제목 없음)' : '(제목 없음)'; };
+  // 제목은 덱이 지금 보이는 언어(<html data-lang>)의 글자만 읽는다. 숨겨진 장의 innerText는 두 언어를 모두 돌려준다
+  const titleOf = (s) => {
+    const t = s.querySelector('.title, h1, h2, h3'); if (!t) return '(제목 없음)';
+    const l = doc && doc.documentElement.getAttribute('data-lang'), sp = l && t.querySelector(`:scope > [lang="${l}"]`);
+    const c = (sp || t).cloneNode(true); c.querySelectorAll('br').forEach((b) => b.replaceWith(' '));
+    return clean(c.textContent) || '(제목 없음)';
+  };
+  let jumpLang = null;
+  const fillJump = () => {
+    jumpLang = doc.documentElement.getAttribute('data-lang');
+    $('.jump').innerHTML = slides.map((s, k) => `<option value="${k}">${k + 1} / ${slides.length} · ${titleOf(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])}</option>`).join('');
+    $('.jump').value = String(Math.max(cur, 0));
+  };
   const slideOf = (el) => slides.findIndex((s) => s.contains(el));
   const S = (k) => (db[k] = db[k] || { note: '', items: [] });
   const pathOf = (el, s) => {
@@ -172,11 +186,12 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
   }).catch(() => { $('.status').textContent = '저장 실패: 서버 연결 없음'; return false; });
   const save = () => { $('.status').textContent = '저장 중'; clearTimeout(saveT); saveT = setTimeout(() => push('save'), 400); activity(); };
 
-  // ---- 수명: 열려 있는 동안 30초마다 신호, 사용자 조작은 30초에 한 번까지 알린다 (서버는 화면이 닫히거나 오래 조작이 없으면 종료한다)
+  // ---- 수명: 열려 있는 동안 2초마다 신호, 사용자 조작은 30초에 한 번까지 알린다 (서버는 화면이 닫히거나 오래 조작이 없으면 종료한다)
   // 2초마다 서버에 신호를 보내고, 서버가 알려 주는 덱·회차가 바뀌면(review.py open) 이 탭에서 새 덱을 연다
   let lastActive = 0, myRound = null;
-  const beat = (active) => fetch('/__heartbeat' + (active ? '?active=1' : ''), { cache: 'no-store' }).then((r) => r.json()).then((st) => {
-    if (myRound === null) { myRound = st.round; return; }
+  // round=: 이 화면이 보고 있는 회차. review.py가 덱 전환이 화면에 반영되었는지 확인한다
+  const beat = (active) => fetch('/__heartbeat?round=' + (myRound ?? '') + (active ? '&active=1' : ''), { cache: 'no-store' }).then((r) => r.json()).then((st) => {
+    if (myRound === null) { myRound = st.round; beat(false); return; }
     if (st.target && st.round !== myRound) location.replace('/__review/' + st.target.split('/').map(encodeURIComponent).join('/'));
   }).catch(() => {});
   const activity = () => { const n = Date.now(); if (n - lastActive > 30000) { lastActive = n; beat(true); } };
@@ -308,9 +323,11 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
   };
   const goTo = (k) => {
     if (!slides[k]) return;
+    // 이 스킬의 템플릿으로 만든 덱은 장 이동 함수 show(장 번호)를 가진다. 단계가 많아도 한 번에 이동한다
+    if (typeof win.show === 'function' && slides.length === win.document.querySelectorAll('section.slide:not(.step-copy)').length) { try { win.show(k); return; } catch (e) {} }
     if (win.getComputedStyle(slides[k]).display === 'none' || slides.every((s) => s.getBoundingClientRect().top === slides[0].getBoundingClientRect().top)) {
-      let guard = 60;
-      const step = () => { const c = visible(); if (c === k || !guard--) return; key(c < k ? 'ArrowRight' : 'ArrowLeft'); setTimeout(step, 40); };
+      let guard = 400;
+      const step = () => { const c = visible(); if (c === k || !guard--) return; key(c < k ? 'ArrowRight' : 'ArrowLeft'); setTimeout(step, 15); };
       step();
     } else slides[k].scrollIntoView();
   };
@@ -335,9 +352,10 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
   const tick = () => {
     if (!doc || !slides.length || document.body.classList.contains('finished')) return;
     const k = visible();
+    if (doc.documentElement.getAttribute('data-lang') !== jumpLang) { fillJump(); $('.stitle').textContent = `${k + 1}. ${titleOf(slides[k])}`; }
     if (k !== cur) {
       cur = k; sel = null; hover = null;
-      $('.pos').textContent = `${k + 1} / ${slides.length}`;
+      $('.jump').value = String(k);
       $('.stitle').textContent = `${k + 1}. ${titleOf(slides[k])}`;
       $('.note').value = (db[k] || {}).note || '';
       renderPick(); renderItems();
@@ -358,6 +376,8 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
     relayout();
     slides = [...doc.querySelectorAll('section.slide')];
     if (!slides.length) slides = [...doc.querySelectorAll('section')];
+    fillJump();
+    $('.jump').onchange = (e) => { goTo(+e.target.value); e.target.blur(); };
     if (!slides.length) { $('.stitle').textContent = '슬라이드를 찾지 못했다. 덱에 <section> 요소가 없다.'; return; }
     const st = doc.createElement('style');
     st.textContent = 'html.rv-sel section *{cursor:crosshair!important}';

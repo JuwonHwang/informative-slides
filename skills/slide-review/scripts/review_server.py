@@ -43,7 +43,9 @@ PORT = int(sys.argv[sys.argv.index("--port") + 1]) if "--port" in sys.argv else 
 CLOSED_LIMIT = int(os.environ.get("REVIEW_CLOSED_LIMIT", 600))
 IDLE_LIMIT = int(os.environ.get("REVIEW_IDLE_LIMIT", 3600))
 START = time.time()
-LAST_SEEN = START      # 마지막 heartbeat
+LAST_SEEN = START      # 마지막 heartbeat (수명 계산용. 서버 시작 시각에서 센다)
+LAST_BEAT = 0.0        # 화면이 실제로 보낸 마지막 heartbeat. 0이면 아직 열린 화면이 없다
+BEAT_ROUND = None      # 마지막 heartbeat를 보낸 화면이 보고 있는 회차
 LAST_ACTIVE = START    # 마지막 사용자 조작(클릭, 키, 의견 입력, 저장)
 SERVER = None
 # 검수 완료 뒤에는 의견을 받지 않고 HTML·PDF 저장만 처리한다. 화면이 닫히면 FINISHED_CLOSED초, 조작이 없으면 FINISHED_IDLE초 뒤 종료한다.
@@ -129,14 +131,24 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        global LAST_SEEN, LAST_ACTIVE
+        global LAST_SEEN, LAST_ACTIVE, LAST_BEAT, BEAT_ROUND
         if self.path == "/__ping":
             return self._reply(200)
         if self.path.startswith("/__heartbeat"):
-            LAST_SEEN = time.time()
+            LAST_SEEN = LAST_BEAT = time.time()
+            m = re.search(r"[?&]round=(\d+)", self.path)
+            if m:
+                BEAT_ROUND = int(m.group(1))
             if "active=1" in self.path:
                 LAST_ACTIVE = LAST_SEEN
             body = json.dumps({"target": TARGET, "round": ROUND, "finished": FINISHED}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(body)
+            return None
+        if self.path == "/__seen":
+            body = json.dumps({"round": BEAT_ROUND, "last_beat": LAST_BEAT}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.end_headers()
@@ -264,7 +276,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 return self._reply(400, b"bad deck path")
             TARGET, ROUND, FINISHED = rel, ROUND + 1, False
             LAST_ACTIVE = time.time()
-            connected = time.time() - LAST_SEEN < 10
+            # 서버 시작 시각이 아니라 화면이 보낸 신호로만 판단한다
+            connected = LAST_BEAT > 0 and time.time() - LAST_BEAT < 10
             body = json.dumps({"round": ROUND, "connected": connected}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
