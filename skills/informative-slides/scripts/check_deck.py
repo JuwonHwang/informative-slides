@@ -182,13 +182,15 @@ def main():
     if not slides:
         print('ERROR: no <section class="slide"> found')
         sys.exit(1)
-    issues, titles = [], []
+    issues, titles, leads_in_order = [], [], []
 
     for i, s in enumerate(slides, 1):
         layout = s.attrs.get("data-layout") or ("cover" if "cover" in s.cls else "")
         t_el = next((n for n in walk(s) if "title" in n.cls), None)
         title = one_line(text(t_el)) if t_el else ""
         titles.append((i, layout, title))
+        lead_el = next((n for n in walk(s) if "lead" in n.cls), None)
+        leads_in_order.append((i, one_line(text(lead_el)) if lead_el else ""))
         if not title:
             issues.append(("ERROR", i, "no .title"))
         else:
@@ -219,7 +221,7 @@ def main():
                         if sum("\uac00" <= ch <= "\ud7a3" for ch in line) > 30:
                             issues.append(("WARN", i, f'summary line too long: "{one_line(line)[:30]}…"; use a short phrase (30 Hangul max)'))
         if layout == "summary" and not any("recap" in n.cls for n in walk(s)):
-            issues.append(("WARN", i, "summary has no .recap (why, what, how)"))
+            issues.append(("WARN", i, "summary has no .recap (purpose, problem, answer)"))
 
         is_src = lambda n: "source" in n.cls
         # 방법 설명 장: 단계 설명(.narration)은 분량을 따로 센다(원칙 8)
@@ -343,6 +345,11 @@ def main():
     print("Titles in order (read these alone: they should state the whole argument):")
     for i, layout, t in titles:
         print(f"  {i:>2}. [{layout or '-'}] {t}")
+    print()
+    print("Messages in order (read these alone: each should answer the question the previous one leaves):")
+    for i, m in leads_in_order:
+        if m:
+            print(f"  {i:>2}. {m}")
     print()
     order = {"ERROR": 0, "WARN": 1, "INFO": 2}
     for lvl, i, msg in sorted(issues, key=lambda x: (order[x[0]], x[1])):
