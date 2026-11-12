@@ -10,7 +10,8 @@ open
   Reuses the running review server when its root folder contains the deck. Otherwise it starts
   review_server.py in the background on a free local port (from 8765 up, 127.0.0.1 only), with the
   deck's git repository top folder as root (or the deck's folder, or --root). Then it opens the
-  review page in the browser and prints:
+  review page in the browser, waits up to 15 s for the page to connect, and prints:
+    connected true only when a review page sent this round's signal (false: the page is not confirmed open)
     url       review page
     feedback  <deck>-feedback.md, written as the reader types
     done      <deck>-feedback.done, created when the reader presses 검수 완료
@@ -162,12 +163,25 @@ def main():
             if seen.get("round") == opened.get("round"):
                 switched = True
                 break
+    connected = switched
     if not switched and "--no-browser" not in args:
         webbrowser.open(url)
+        # 탭 열기를 시도한 것만으로는 화면이 열렸는지 알 수 없다. 새 탭이 이 회차로 첫 신호를 보낼 때까지 15초 기다린다
+        for _ in range(60):
+            time.sleep(0.25)
+            try:
+                with urllib.request.urlopen(f"http://127.0.0.1:{state['port']}/__seen", timeout=2) as r:
+                    seen = json.loads(r.read())
+            except OSError:
+                break
+            if seen.get("round") == opened.get("round"):
+                connected = True
+                break
+    shown = "existing review tab" if switched else ("new browser tab" if connected else "not confirmed")
     print(json.dumps({"url": url, "port": state["port"], "root": state["root"],
                       "feedback": f"{base}-feedback.md", "done": f"{base}-feedback.done",
                       "archived_previous_round": archived,
-                      "shown_in": "existing review tab" if switched else "new browser tab"}, ensure_ascii=False))
+                      "connected": connected, "shown_in": shown}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

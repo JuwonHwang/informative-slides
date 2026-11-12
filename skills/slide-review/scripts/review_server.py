@@ -38,9 +38,11 @@ FONT_CSS = "".join(
 PORT = int(sys.argv[sys.argv.index("--port") + 1]) if "--port" in sys.argv else 8765
 
 
-# 수명: 열린 검수 화면이 30초마다 /__heartbeat를 보낸다. 열린 화면이 없는 상태가 CLOSED_LIMIT초,
-# 또는 사용자 조작이 없는 상태가 IDLE_LIMIT초 이어지면 서버가 종료한다. 검수 완료를 받으면 바로 종료한다.
-CLOSED_LIMIT = int(os.environ.get("REVIEW_CLOSED_LIMIT", 600))
+# 수명: 열린 검수 화면이 2초마다 /__heartbeat를 보낸다. 화면이 한 번 연결된 뒤 신호가 없는 상태가 CLOSED_LIMIT초,
+# 화면이 한 번도 연결되지 않은 상태가 NEVER_LIMIT초, 사용자 조작이 없는 상태가 IDLE_LIMIT초 이어지면 서버가 종료한다.
+# 브라우저는 뒤쪽 탭의 타이머를 늦추거나 멈추므로, 열려 있는 탭도 몇 분 동안 신호를 보내지 않을 수 있다. 그래서 CLOSED_LIMIT을 30분으로 둔다.
+CLOSED_LIMIT = int(os.environ.get("REVIEW_CLOSED_LIMIT", 1800))
+NEVER_LIMIT = int(os.environ.get("REVIEW_NEVER_LIMIT", 3600))
 IDLE_LIMIT = int(os.environ.get("REVIEW_IDLE_LIMIT", 3600))
 START = time.time()
 LAST_SEEN = START      # 마지막 heartbeat (수명 계산용. 서버 시작 시각에서 센다)
@@ -68,8 +70,11 @@ def watchdog():
         if FINISHED and (now - LAST_SEEN > FINISHED_CLOSED or now - LAST_ACTIVE > FINISHED_IDLE):
             sys.stderr.write("review finished and screen closed or idle; stopping\n")
             return shutdown_later(0)
-        if now - LAST_SEEN > CLOSED_LIMIT:
-            sys.stderr.write(f"no open review screen for {CLOSED_LIMIT}s; stopping\n")
+        if LAST_BEAT == 0 and now - START > NEVER_LIMIT:
+            sys.stderr.write(f"no review screen connected in {NEVER_LIMIT}s; stopping\n")
+            return shutdown_later(0)
+        if LAST_BEAT > 0 and now - LAST_SEEN > CLOSED_LIMIT:
+            sys.stderr.write(f"no signal from the review screen for {CLOSED_LIMIT}s; stopping\n")
             return shutdown_later(0)
         if now - LAST_ACTIVE > IDLE_LIMIT:
             sys.stderr.write(f"no activity for {IDLE_LIMIT}s; stopping\n")

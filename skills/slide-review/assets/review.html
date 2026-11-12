@@ -21,6 +21,7 @@ button{font:inherit;cursor:pointer}
 .ctl select,.ctl input{font:inherit;font-size:13px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
 .ctl input{width:56px}
 .status{color:var(--muted);font-size:13px;margin-left:auto}
+.server-gone{position:fixed;top:0;left:0;right:0;z-index:99;padding:14px 18px;font-size:16px;font-weight:700;color:#fff;background:#dc2626;text-align:center}
 .jump{font:inherit;font-size:13px;max-width:320px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
 .dl{padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:13px;text-decoration:none;cursor:pointer}
 .dl:hover{background:var(--soft)}
@@ -190,10 +191,23 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
   // 2초마다 서버에 신호를 보내고, 서버가 알려 주는 덱·회차가 바뀌면(review.py open) 이 탭에서 새 덱을 연다
   let lastActive = 0, myRound = null;
   // round=: 이 화면이 보고 있는 회차. review.py가 덱 전환이 화면에 반영되었는지 확인한다
+  // 서버가 종료되어 신호가 3번 연속 실패하면 화면 위에 안내를 띄운다. 의견을 더 저장할 수 없기 때문이다
+  let fails = 0;
+  const gone = (on) => {
+    let b = document.querySelector('.server-gone');
+    if (!on) { if (b) b.remove(); return; }
+    if (b) return;
+    b = document.createElement('div'); b.className = 'server-gone';
+    b.textContent = '검수 서버가 종료되어 의견을 저장할 수 없다. 에이전트에게 검수 화면을 다시 열어 달라고 요청한다.';
+    document.body.appendChild(b);
+  };
   const beat = (active) => fetch('/__heartbeat?round=' + (myRound ?? '') + (active ? '&active=1' : ''), { cache: 'no-store' }).then((r) => r.json()).then((st) => {
+    fails = 0; gone(false);
     if (myRound === null) { myRound = st.round; beat(false); return; }
     if (st.target && st.round !== myRound) location.replace('/__review/' + st.target.split('/').map(encodeURIComponent).join('/'));
-  }).catch(() => {});
+  }).catch(() => { if (++fails >= 3) gone(true); });
+  // 뒤쪽 탭에서 다시 앞으로 오면 바로 신호를 보낸다(브라우저가 뒤쪽 탭의 타이머를 늦추기 때문이다)
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) beat(false); });
   const activity = () => { const n = Date.now(); if (n - lastActive > 30000) { lastActive = n; beat(true); } };
   setInterval(() => beat(false), 2000);
   beat(true);
