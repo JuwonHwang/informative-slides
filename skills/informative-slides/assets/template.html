@@ -357,20 +357,20 @@ svg .zoom-line{stroke:var(--fg);stroke-width:1.5;stroke-dasharray:6 5}
 <section class="slide" data-layout="overview">
   <div class="eyebrow"><span lang="ko">전체 그림</span><span lang="en">Overview</span></div>
   <h2 class="title">
-    <span lang="ko">미팅 주기와 기록 파일 2개의 전체 그림</span>
-    <span lang="en">Overview of the meeting cycle and its 2 record files</span>
+    <span lang="ko">미팅 주기와 기록 파일 2개의 전체 처리 과정</span>
+    <span lang="en">Full process of the meeting cycle and its 2 record files</span>
   </h2>
   <p class="lead">
-    <span lang="ko">미팅 주기는 자료 준비, 미팅, 노트 작성이 반복되는 구조이고,<br>결정은 노트 작성(④)에서 <span class="new">미팅 노트</span>와 <span class="c1">GOAL.md</span> 중 한 곳에 기록된다.</span>
-    <span lang="en">The meeting cycle repeats making slides, the meeting and writing the note;<br>writing the note (④) records each decision in the <span class="new">note</span> or in <span class="c1">GOAL.md</span>.</span>
+    <span lang="ko">목표를 GOAL.md에 쓴 뒤 자료 준비, 미팅, 노트 작성을 반복하고,<br>결정은 노트 작성(④)에서 <span class="new">미팅 노트</span>나 <span class="c1">GOAL.md</span>에 기록된다.</span>
+    <span lang="en">After the goal is written to GOAL.md, making slides, the meeting and writing the note repeat;<br>writing the note (④) records each decision in the <span class="new">note</span> or <span class="c1">GOAL.md</span>.</span>
   </p>
-  <div class="zoom">
-    <div class="figure" data-diagram="cycle" data-steps=";walk,meeting,after,note;after,note,goalmd"></div>
-    <div class="side">
-      <ul class="points small">
-        <li data-step="2"><span lang="ko"><strong>1. 미팅 주기 구조:</strong><br>②→③→④→② 반복</span><span lang="en"><strong>1. Meeting cycle:</strong><br>② → ③ → ④ → ② repeats</span></li>
-        <li data-step="3"><span lang="ko"><strong>2. 결정별 기록 위치:</strong><br>④에서 note.md 또는 GOAL.md</span><span lang="en"><strong>2. Where decisions go:</strong><br>④ writes note.md or GOAL.md</span></li>
-      </ul>
+  <div class="method">
+    <div class="figure" data-diagram="cycle" data-steps=";goal,goalmd;walk,meeting;after,note,goalmd"></div>
+    <div class="narration">
+      <p data-only="1"><span lang="ko"><span class="step-name">입력과 출력</span>입력은 사용자가 정한 연구 목표이다.<br>출력은 미팅마다 남는 미팅 노트와<br>목표가 바뀔 때만 고치는 GOAL.md이다.</span><span lang="en"><span class="step-name">Input and output</span>The input is the user's research goal.<br>The outputs are a note per meeting<br>and GOAL.md, edited only on goal changes.</span></p>
+      <p data-only="2"><span lang="ko"><span class="step-name">① 목표 작성 → GOAL.md</span>이후 모든 미팅이 결과를 판단할<br>달성 기준을 만든다.<br>goal 스킬이 사용자의 답을 GOAL.md에 쓴다.</span><span lang="en"><span class="step-name">① Set goal → GOAL.md</span>It sets the success criteria<br>every later meeting judges results by.<br>The goal skill writes the answers to GOAL.md.</span></p>
+      <p data-only="3"><span lang="ko"><span class="step-name">② 자료 준비 → ③ 미팅 (요약 1)</span>미팅에서 결정할 근거를 만든다.<br>meet 스킬이 GOAL.md와 지난 노트를 읽어<br>설명 자료를 만들고, 사용자가 미팅에서 정한다.</span><span lang="en"><span class="step-name">② Slides → ③ Meeting (item 1)</span>It produces the basis for decisions.<br>The meet skill reads GOAL.md and the last note<br>to make slides; the user decides in the meeting.</span></p>
+      <p data-only="4"><span lang="ko"><span class="step-name">④ 노트 작성 (요약 1, 2)</span>다음 미팅이 읽을 기록을 만든다.<br>meet 스킬이 정한 것을 note.md에 쓴다.<br>목표 자체를 바꾼 결정만 GOAL.md를 고친다.</span><span lang="en"><span class="step-name">④ Note (items 1, 2)</span>It makes the record the next meeting reads.<br>The meet skill writes decisions to note.md.<br>Only goal changes edit GOAL.md.</span></p>
     </div>
   </div>
   <div class="source"><span lang="ko">출처: skills/*/SKILL.md</span><span lang="en">Source: skills/*/SKILL.md</span></div>
