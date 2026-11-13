@@ -7,7 +7,8 @@ Usage:
   python3 review.py status
 
 open
-  Reuses the running review server when its root folder contains the deck. Otherwise it starts
+  Reuses the running review server when its root folder contains the deck and it was started from this
+  plugin folder (an older plugin version's server is stopped, since it serves its own review screen). Otherwise it starts
   review_server.py in the background on a free local port (from 8765 up, 127.0.0.1 only), with the
   deck's git repository top folder as root (or the deck's folder, or --root). Then it opens the
   review page in the browser, waits up to 15 s for the page to connect, and prints:
@@ -108,7 +109,10 @@ def main():
         sys.exit(f"deck not found: {deck}")
     root = pathlib.Path(args[args.index("--root") + 1]).resolve() if "--root" in args else (git_top(deck.parent) or deck.parent)
 
-    if not (alive(state) and pathlib.Path(state["root"]) in [deck, *deck.parents]):
+    # 서버는 자기를 띄운 플러그인 폴더의 검수 화면(assets/review.html)을 보낸다. 플러그인을 갱신한 뒤에도 이전 버전이 띄운
+    # 서버를 다시 쓰면 이전 화면이 나오므로, 같은 서버 스크립트가 띄운 서버만 다시 쓴다.
+    server = str(HERE / "review_server.py")
+    if not (alive(state) and pathlib.Path(state["root"]) in [deck, *deck.parents] and state.get("server") == server):
         if alive(state):
             stop(state)
         port = free_port()
@@ -116,7 +120,7 @@ def main():
         log = open(HOME / "review-server.log", "a")
         proc = subprocess.Popen([sys.executable, str(HERE / "review_server.py"), str(root), "--port", str(port)],
                                 stdout=log, stderr=log, start_new_session=True)
-        state = {"pid": proc.pid, "port": port, "root": str(root)}
+        state = {"pid": proc.pid, "port": port, "root": str(root), "server": server}
         for _ in range(50):
             if alive(state):
                 break
