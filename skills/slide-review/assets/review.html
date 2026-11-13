@@ -17,19 +17,33 @@ button{font:inherit;cursor:pointer}
 .nav button{width:32px;height:32px;border:1px solid var(--line);border-radius:8px;background:#fff}
 .nav .pos{min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
 .toggle{display:flex;align-items:center;gap:6px;color:var(--muted)}
-.ctl{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:13px}
+.ctl{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted);font-size:13px}
+/* 보기 설정(비율, 표시, PDF 가로)은 상단 막대에서 버튼 하나로 접는다. 좁은 화면에서도 저장·보내기·완료 버튼이 막대 안에 남게 한다 */
+.opts{position:relative;font-size:13px}
+.opts summary{list-style:none;cursor:pointer;padding:5px 10px;border:1px solid var(--line);border-radius:8px;color:var(--ink);white-space:nowrap}
+.opts summary::-webkit-details-marker{display:none}
+.opts summary::after{content:"▾";margin-left:6px;color:var(--muted)}
+.opts .menu{position:absolute;top:calc(100% + 6px);left:0;z-index:10;display:flex;flex-direction:column;gap:8px;min-width:260px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.12)}
 .ctl select,.ctl input{font:inherit;font-size:13px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
 .ctl input{width:56px}
-.status{color:var(--muted);font-size:13px;margin-left:auto}
+/* 상태 글은 한 줄로 두고 넘치면 말줄임한다. 글 길이에 따라 상단 막대 높이가 바뀌지 않게 한다. 전체 글은 마우스를 올리면 보인다 */
+.status{color:var(--muted);font-size:13px;margin-left:auto;flex:1 1 0;min-width:0;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar > *{flex-shrink:0}
+/* 상단 막대의 조작 요소는 모두 높이 32px로 맞춰 한 줄에서 위아래가 맞게 한다 */
+.nav button,.jump,.opts summary,.dl,.send,.done{box-sizing:border-box;height:32px;display:inline-flex;align-items:center;justify-content:center;padding-top:0;padding-bottom:0}
+.bar > .status{flex-shrink:1}
+.bar > .nav{flex-shrink:1;min-width:200px}
+.bar > .name{flex-shrink:1;min-width:60px}
 .server-gone{position:fixed;top:0;left:0;right:0;z-index:99;padding:14px 18px;font-size:16px;font-weight:700;color:#fff;background:#dc2626;text-align:center}
-.jump{font:inherit;font-size:13px;max-width:320px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+.jump{font:inherit;font-size:13px;flex:1 1 auto;min-width:0;max-width:320px;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
 .dl{padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-size:13px;text-decoration:none;cursor:pointer}
 .dl:hover{background:var(--soft)}
 .done{padding:7px 16px;border:0;border-radius:8px;background:var(--good);color:#fff;font-weight:700}
 .done[disabled],.send[disabled]{opacity:.5;cursor:default}
 .send{padding:7px 14px;border:1px solid var(--good);border-radius:8px;background:#fff;color:var(--good);font-weight:700}
 /* main */
-.main{display:grid;grid-template-columns:1fr 380px;min-height:0}
+/* 의견 패널 폭은 창 폭의 26%를 따르되 360~480px 사이로 둔다 */
+.main{display:grid;grid-template-columns:1fr clamp(360px, 26vw, 480px);min-height:0}
 .stage{position:relative;display:grid;place-items:center;padding:20px;min-width:0;min-height:0;overflow:auto}
 .stage iframe{border:0;background:#fff;box-shadow:0 8px 24px rgba(15,23,42,.18);border-radius:4px}
 .layer{position:fixed;inset:0;pointer-events:none;z-index:5}
@@ -52,12 +66,19 @@ ol.items{list-style:none;display:flex;flex-direction:column;gap:6px}
 ol.items li{display:grid;grid-template-columns:22px 1fr auto;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:13px}
 ol.items li:hover{border-color:var(--accent)}
 ol.items .n{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:12px;font-weight:700}
-ol.items .lb{color:var(--muted)}
-ol.items .x{border:0;background:none;color:#94A3B8}
+/* 요소 이름과 문구는 한 줄로 두고 넘치면 말줄임한다. 전체는 마우스를 올리면 보인다. 의견 본문은 줄바꿈한다 */
+ol.items .body{min-width:0}
+ol.items .lb{display:block;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ol.items .tx{display:block;overflow-wrap:anywhere}
+/* 삭제 버튼과 번호는 항목의 첫 줄에 맞춘다(항목이 여러 줄이어도 가운데로 내려가지 않게) */
+ol.items .n,ol.items .x{align-self:start}
+ol.items .x{border:0;background:none;color:#94A3B8;padding:0 2px;line-height:20px}
 .slides{display:flex;flex-wrap:wrap;gap:6px}
 .slides button{min-width:30px;padding:2px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:13px}
 .slides button.has{border-color:var(--accent);color:var(--accent);font-weight:700}
 .slides button.cur{background:var(--ink);border-color:var(--ink);color:#fff}
+/* 지금 장에 의견이 있으면 채움을 강조색으로 바꿔, 지금 장 표시와 의견 있음 표시가 함께 보이게 한다 */
+.slides button.cur.has{background:var(--accent);border-color:var(--accent)}
 .err{padding:24px;color:#B91C1C}
 /* 검수 완료 뒤: 조작을 막고 안내 문구만 남긴다 */
 body.finished .stage{pointer-events:none;opacity:.6}
@@ -71,13 +92,15 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
   <div class="nav"><button class="prev" title="이전 (←)">◀</button><select class="jump" title="장 바로가기">
 <option>–</option></select><button class="next" title="다음 (→)">▶</button></div>
   <label class="toggle"><input type="checkbox" class="selmode" checked> 요소 선택</label>
+  <details class="opts"><summary title="비율, 표시 크기, PDF 가로 길이. 화면과 PDF에만 적용하고 덱 파일은 바꾸지 않는다">보기 설정</summary><div class="menu">
   <label class="ctl" title="화면과 PDF에 적용한다. 덱 파일은 바꾸지 않는다">비율
     <select class="ratio"><option value="">덱 설정</option><option>16:9</option><option>16:10</option><option>4:3</option><option>3:2</option><option>1:1</option><option>21:9</option></select></label>
   <label class="ctl" title="검수 화면에서 슬라이드를 보이는 크기. 100%는 PDF 쪽의 실제 크기">표시
     <select class="zoom"><option value="fit">맞춤</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option><option value="1.5">150%</option></select></label>
   <label class="ctl" title="PDF 쪽의 가로 길이. 세로는 비율에서 정해진다">PDF 가로
-    <select class="pw"><option value="16">16 in</option><option value="13.3333333">13.33 in (파워포인트 와이드)</option><option value="11.69">11.69 in (A4 가로)</option><option value="20">20 in (1920px)</option><option value="custom">직접 입력</option></select>
+    <select class="pw"><option value="16">16 in</option><option value="13.3333333">13.33 in (와이드)</option><option value="11.69">11.69 in (A4 가로)</option><option value="20">20 in (1920px)</option><option value="custom">직접 입력</option></select>
     <input class="pwc" type="number" min="1" max="60" step="0.01" placeholder="in" hidden></label>
+  </div></details>
   <span class="status"></span>
   <button class="dl html" title="덱 HTML 파일을 저장한다. 저장 위치를 고른다">HTML 저장</button>
   <button class="dl pdf" title="지금 보는 언어, 고른 비율과 가로 길이로 장마다 한 쪽인 PDF를 저장한다. 저장 위치를 고른다">PDF 저장</button>
@@ -182,9 +205,10 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ deck: deckPath, action, markdown: md(), json: { title: doc && doc.title, slides: slides.map(titleOf), feedback: db } }),
   }).then((r) => {
-    $('.status').textContent = !r.ok ? '저장 실패' : action === 'send' ? '피드백을 보냈다. 반영되면 덱을 다시 불러온다' : action === 'done' ? '' : '저장됨';
+    $('.status').textContent = !r.ok ? '저장 실패' : action === 'send' ? '피드백을 보냈다' : action === 'done' ? '' : '저장됨';
     return r.ok;
   }).catch(() => { $('.status').textContent = '저장 실패: 서버 연결 없음'; return false; });
+  { const st = $('.status'); new MutationObserver(() => { st.title = st.textContent }).observe(st, { childList: true, characterData: true, subtree: true }) }
   const save = () => { $('.status').textContent = '저장 중'; clearTimeout(saveT); saveT = setTimeout(() => push('save'), 400); activity(); };
 
   // ---- 수명: 열려 있는 동안 2초마다 신호, 사용자 조작은 30초에 한 번까지 알린다 (서버는 화면이 닫히거나 오래 조작이 없으면 종료한다)
@@ -250,7 +274,10 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
   $('.pw').onchange = () => { $('.pwc').hidden = $('.pw').value !== 'custom'; relayout(); };
   $('.pwc').oninput = relayout;
   ['keydown', 'keyup'].forEach((t) => $('.bar').addEventListener(t, (e) => { if (e.target.closest('select,input')) e.stopPropagation(); }));
-  addEventListener('resize', fit); fit();
+  // 창 크기뿐 아니라 슬라이드 영역 크기가 바뀌어도 다시 맞춘다
+  addEventListener('resize', fit); new ResizeObserver(fit).observe($('.stage')); fit();
+  // 보기 설정 메뉴는 메뉴 밖을 누르면 닫는다
+  document.addEventListener('click', (e) => { const o = $('.opts'); if (o.open && !o.contains(e.target)) o.open = false; });
 
   // ---- overlay drawing (iframe coordinates -> page coordinates)
   const mk = (cls) => { const d = document.createElement('div'); d.className = 'ov ' + cls; layer.appendChild(d); return d; };
@@ -270,8 +297,13 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
     ((db[cur] || {}).items || []).forEach((it, i) => {
       const el = find(cur, it.path);
       if (!el) return;
-      const r = rectOf(el);
+      // 핀은 요소 상자의 오른쪽 끝이 아니라 글이 끝나는 곳의 오른쪽 위에 둔다. 폭 전체를 차지하는 블록에서도 핀이 글 옆에 붙는다
+      let r = rectOf(el);
       if (!r.width) return;
+      try {
+        const rg = doc.createRange(); rg.selectNodeContents(el); const t = rg.getBoundingClientRect(), f = frame.getBoundingClientRect();
+        if (t.width && t.right < el.getBoundingClientRect().right - 1) r = { ...r, right: f.left + t.right + 6, top: f.top + t.top };
+      } catch (e) {}
       const p = document.createElement('div');
       p.className = 'ov-pin'; p.textContent = i + 1;
       p.style.left = r.right + 'px'; p.style.top = r.top + 'px';
@@ -308,9 +340,9 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
     const ol = $('.items'); ol.innerHTML = '';
     ((db[cur] || {}).items || []).forEach((it, i, arr) => {
       const li = document.createElement('li');
-      li.innerHTML = '<span class="n"></span><span><span class="lb"></span><br><span class="tx"></span></span><button class="x" title="삭제">✕</button>';
+      li.innerHTML = '<span class="n"></span><span class="body"><span class="lb"></span><span class="tx"></span></span><button class="x" title="삭제">✕</button>';
       li.querySelector('.n').textContent = i + 1;
-      li.querySelector('.lb').textContent = `${it.label} · ${it.excerpt}`;
+      li.querySelector('.lb').textContent = li.querySelector('.lb').title = `${it.label} · ${it.excerpt}`;
       li.querySelector('.tx').textContent = it.text;
       li.onclick = () => { flashEl = find(cur, it.path); flashT = Date.now(); if (flashEl) { sel = flashEl; renderPick(); } };
       li.querySelector('.x').onclick = (e) => { e.stopPropagation(); arr.splice(i, 1); save(); renderItems(); };
@@ -364,6 +396,8 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
   };
 
   const tick = () => {
+    // 강조 테두리와 핀은 슬라이드 영역(.stage) 안에서만 보인다. 확대해 스크롤하면 영역 밖 요소의 표시가 상단 막대나 패널 위에 그려지지 않게 한다
+    { const r = $('.stage').getBoundingClientRect(); layer.style.clipPath = `inset(${r.top}px ${innerWidth - r.right}px ${innerHeight - r.bottom}px ${r.left}px)`; }
     if (!doc || !slides.length || document.body.classList.contains('finished')) return;
     const k = visible();
     if (doc.documentElement.getAttribute('data-lang') !== jumpLang) { fillJump(); $('.stitle').textContent = `${k + 1}. ${titleOf(slides[k])}`; }
