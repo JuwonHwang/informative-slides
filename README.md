@@ -31,5 +31,7 @@ Claude Code 플러그인으로 설치한다. Claude Code에서 다음을 실행�
 
 MIT License(`LICENSE`). 다만 `skills/slide-review/assets/fonts/`의 Pretendard 글꼴은 SIL Open Font License 1.1을
 따른다(`skills/slide-review/assets/fonts/LICENSE.txt`).
+`skills/informative-slides/assets/vendor/mathjax-tex-svg.js`는 MathJax 3.2.2이며 Apache License 2.0을 따른다
+(`skills/informative-slides/assets/vendor/MATHJAX-LICENSE.txt`). 수식이 있는 덱에는 이 파일이 들어간다.
 `skills/informative-slides/assets/template.html`은 [drive-project-forward](https://github.com/JuwonHwang/drive-project-forward)의
 슬라이드 템플릿과 `slides/RULES.md`를 기반으로 한다.

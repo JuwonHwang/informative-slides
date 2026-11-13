@@ -334,6 +334,14 @@ def main():
     if uni:
         issues.append(("WARN", 0, f'Unicode sub/superscript letters {" ".join(uni)}; write math as \\( K_j^{{\\top}} \\) instead (they fall back to another font and leave gaps)'))
 
+    # 수식 렌더러: \( … \)가 있으면 MathJax가 덱 안에 있어야 그려진다(scripts/embed_math.py)
+    if "\\(" in body_src:
+        lib = re.search(r'<script id="mathjax-lib">(.*?)</script>', src, re.S)
+        if not lib:
+            issues.append(("ERROR", 0, 'formulas \\( … \\) found but no <script id="mathjax-lib">; copy the current assets/template.html'))
+        elif len(lib.group(1)) < 100000:
+            issues.append(("ERROR", 0, "formulas \\( … \\) found but MathJax is not embedded; run scripts/embed_math.py <deck.html>"))
+
     if "--no-browser" not in sys.argv:
         over, note = browser_overflow(path)
         if over is None:

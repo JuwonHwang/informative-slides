@@ -102,11 +102,10 @@ svg .op text{font-weight:700;text-anchor:middle;dominant-baseline:central}
 svg .group{fill:none;stroke:#6b7280;stroke-width:1.5;stroke-dasharray:6 5;rx:12}
 /* 패널 제목 (a), (b) */
 svg .panel{font-weight:700;fill:var(--fg)}
-/* 수식 기호: 이탤릭 수식 글꼴 */
-svg .math,.math{font-family:"STIX Two Math","STIXGeneral","Cambria Math","Latin Modern Math","Times New Roman",serif;font-style:italic}
-/* \( … \) 수식: 문자는 이탤릭(.math), 기호와 숫자는 바로 선 수식 글꼴(.mathup) */
-svg .mathup,.mathup{font-family:"STIX Two Math","STIXGeneral","Cambria Math","Latin Modern Math","Times New Roman",serif;font-style:normal}
-sub.tex,sup.tex{font-size:70%;line-height:0}
+/* \( … \) 수식은 MathJax가 SVG로 그린다. 그리기 전에는 덱을 감춰 TeX 원문이 보이지 않게 한다 */
+html.math-pending .deck{visibility:hidden}
+mjx-container[jax="SVG"]{display:inline-block;margin:0 .08em}
+svg .tex svg{overflow:visible}
 /* 확대 그림(data-zoom): 전체 그림의 확대 영역 테두리, 확대도 테두리, 둘을 잇는 선 */
 svg .zoom-frame{fill:none;stroke:var(--fg);stroke-width:2.5}
 svg .zoom-panel{fill:#fff;stroke:#9ca3af;stroke-width:1.5}
@@ -465,6 +464,9 @@ svg .zoom-line{stroke:var(--fg);stroke-width:1.5;stroke-dasharray:6 5}
 <div class="toc" hidden></div>
 <button class="langbtn" type="button" title="L 키로도 바꾼다">한국어 · English</button>
 
+<!-- 수식 렌더러 MathJax 3.2.2 (TeX → SVG, Apache License 2.0). 아래 빈 script는 scripts/embed_math.py가 채운다 -->
+<script>window.MathJax = { startup: { typeset: false }, tex: { inlineMath: [['\\(', '\\)']] }, svg: { fontCache: 'local' } }</script>
+<script id="mathjax-lib"></script>
 <script>
 // 화면 비율: <html data-ratio="가로:세로"> 한 곳에서 정한다. 화면의 장 크기와 인쇄·PDF 쪽 크기가 모두 이 값을 따른다.
 // 주소의 ?ratio=4:3&w=13.333(쪽 가로 인치)은 이 파일을 바꾸지 않고 한 번만 덮어쓴다(검수 화면의 PDF 저장이 쓴다).
@@ -525,84 +527,102 @@ function zoomCompose(el) {
   el.appendChild(out)
 }
 
-// 수식: 글과 그림의 \( … \) 안을 TeX 표기로 읽어 그린다. 문자는 이탤릭, _는 아래 첨자, ^는 위 첨자이다.
-// \mathrm{…}과 \text{…}는 바로 선 글자, \tilde{…}·\hat{…}·\bar{…}는 글자 위 기호, \top·\ell·\alpha 같은 명령은 대응하는 기호이다.
-// 같은 글꼴을 작게 해서 위치를 옮기므로 유니코드 첨자 글자(ⱼ, ᵀ)처럼 다른 글꼴로 바뀌어 간격이 벌어지지 않는다.
-const TEX_SYM = { top: '⊤', ell: 'ℓ', alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε', eta: 'η', theta: 'θ', lambda: 'λ',
-  mu: 'μ', pi: 'π', rho: 'ρ', sigma: 'σ', tau: 'τ', phi: 'φ', psi: 'ψ', omega: 'ω', Sigma: 'Σ', Delta: 'Δ', Omega: 'Ω',
-  times: '×', cdot: '·', le: '≤', ge: '≥', leq: '≤', geq: '≥', ne: '≠', approx: '≈', infty: '∞', sum: '∑', prod: '∏', in: '∈',
-  to: '→', rightarrow: '→', leftarrow: '←', gets: '←', odot: '⊙', oplus: '⊕', otimes: '⊗', ldots: '…', cdots: '⋯', partial: '∂',
-  nabla: '∇', sqrt: '√', prime: '′', max: 'max', min: 'min', exp: 'exp', log: 'log', ',': '\u2009', ';': '\u2005', quad: '\u2003', ' ': ' ' }
-// 관계 기호와 화살표 양옆에는 간격을 넣는다
-const REL = new Set(['=', '<', '>', '≤', '≥', '≠', '≈', '←', '→', '∈'])
-function texRuns(src) {
-  // 결과: 글자 묶음 {t, it(이탤릭), lv(첨자 단계 배열: -1 아래, 1 위)}
-  const out = []; let i = 0
-  const push = (t, it, lv) => { if (!t) return; const l = out[out.length - 1], k = lv.join(); if (l && l.it === it && l.lv.join() === k) l.t += t; else out.push({ t, it, lv }) }
-  const cmd = () => { const m = /^[A-Za-z]+|^./.exec(src.slice(i)); i += m ? m[0].length : 0; return m ? m[0] : '' }
-  const braced = () => { if (src[i] !== '{') return src[i++] || ''; let d = 0, j = i; for (; j < src.length; j++) { if (src[j] === '{') d++; else if (src[j] === '}' && !--d) break } const t = src.slice(i + 1, j); i = j + 1; return t }
-  const atom = (lv) => {
-    const c = src[i]
-    if (c === '{') { i++; seq(lv, true); return }
-    if (c === '\\') { i++; const m = cmd()
-      if (m === 'mathrm' || m === 'text' || m === 'operatorname') push(braced(), false, lv)
-      else if (m === 'tilde' || m === 'hat' || m === 'bar') {
-        const inner = texRuns(braced()), t = inner.map(r => r.t).join('')
-        push(t + { tilde: '̃', hat: '̂', bar: '̄' }[m], inner.some(r => r.it), lv) }
-      else { const t = TEX_SYM[m] ?? m; push(REL.has(t) ? '\u2005' + t + '\u2005' : t, false, lv) }
-      return }
-    i++
-    if (c === ' ') return  // TeX처럼 수식 안의 띄어쓰기는 무시한다. 간격은 \, \; \quad로 넣는다
-    const t = c === '-' ? '−' : c
-    push(REL.has(t) || '+−'.includes(t) && lv.length === 0 ? '\u2005' + t + '\u2005' : t, /[A-Za-z]/.test(c), lv)
-  }
-  const seq = (lv, inBrace) => {
-    while (i < src.length) {
-      const c = src[i]
-      if (c === '}') { i++; if (inBrace) return; continue }
-      if (c === '_' || c === '^') { i++; atom([...lv, c === '_' ? -1 : 1]); continue }
-      atom(lv)
-    }
-  }
-  seq([], false)
+// 수식: 글과 그림의 \( … \) 안을 MathJax(TeX 렌더러)로 SVG로 그린다. 분수, 근호, 큰 연산자를 포함한 TeX 표기를 그대로 쓴다.
+// 글 안의 수식은 글자 크기를 따르는 인라인 SVG가 된다. 그림의 <text> 안 수식은 <text>를 글 조각과 수식 SVG로 나눈 <g class="tex">로 바꾸고,
+// 글 조각의 폭을 재서 text-anchor(start, middle, end)와 기준선에 맞춰 놓는다.
+// MathJax가 덱에 없으면(scripts/embed_math.py를 실행하지 않았으면) TeX 원문이 그대로 보이고, check_deck.py가 오류로 보고한다.
+const TEX_RE = /\\\((.+?)\\\)/g
+const hasMath = !!window.MathJax?.startup && /\\\(/.test(document.querySelector('.deck')?.textContent || '')
+if (hasMath) document.documentElement.classList.add('math-pending')
+function texNodes(root) {
+  const out = [], w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+  while (w.nextNode()) if (w.currentNode.nodeValue.includes('\\(') && !w.currentNode.parentNode.closest('script,style,template')) out.push(w.currentNode)
   return out
 }
-function texify(root) {
-  const NS = 'http://www.w3.org/2000/svg', re = /\\\((.+?)\\\)/g
-  const nodes = []; const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
-  while (w.nextNode()) if (w.currentNode.nodeValue.includes('\\(') && !w.currentNode.parentNode.closest('script,style,template')) nodes.push(w.currentNode)
-  nodes.forEach(n => {
-    const svg = n.parentNode.closest('text'), frag = document.createDocumentFragment(), str = n.nodeValue
-    const fs = svg ? (parseFloat(svg.getAttribute('font-size')) || parseFloat(getComputedStyle(svg).fontSize) || 20) : 0
-    let last = 0, shift = 0, m
-    const plain = (t, reset) => { if (!t && !reset) return; if (!svg) { frag.append(t); return }
-      const e = document.createElementNS(NS, 'tspan'); if (reset) e.setAttribute('dy', (-shift).toFixed(1)); shift = 0; e.textContent = t || '​'; frag.append(e) }
-    re.lastIndex = 0
-    while ((m = re.exec(str))) {
-      plain(str.slice(last, m.index), false)
-      texRuns(m[1]).forEach(r => {
-        if (svg) {
-          // 첨자 단계마다 크기는 0.7배, 기준선은 아래 첨자 0.22, 위 첨자 0.42(그 단계 글자 크기 기준)만큼 옮긴다
-          let to = 0, sc = 1
-          r.lv.forEach(d => { to += (d < 0 ? 0.22 : -0.42) * sc * fs; sc = Math.max(0.5, sc * 0.7) })
-          const e = document.createElementNS(NS, 'tspan')
-          e.setAttribute('class', r.it ? 'math' : 'mathup')
-          if (sc !== 1) e.setAttribute('font-size', (sc * fs).toFixed(1))
-          if (Math.abs(to - shift) > 0.01) { e.setAttribute('dy', (to - shift).toFixed(1)); shift = to }
-          e.textContent = r.t; frag.append(e)
-        } else {
-          let e = document.createElement(r.it ? 'i' : 'span'); e.className = r.it ? 'math' : 'mathup'; e.textContent = r.t
-          for (let k = r.lv.length - 1; k >= 0; k--) { const w2 = document.createElement(r.lv[k] < 0 ? 'sub' : 'sup'); w2.className = 'tex'; w2.append(e); e = w2 }
-          frag.append(e)
-        }
-      })
-      last = re.lastIndex
+function texSvg(tex, fs) {
+  // ex 단위를 글자 크기의 0.5로 두고 픽셀로 바꾼다. 세로 정렬 값(음수)은 기준선 아래 깊이이다
+  const svg = MathJax.tex2svg(tex, { display: false, em: fs, ex: fs * 0.5 }).querySelector('svg')
+  const ex = fs * 0.5, num = (v) => parseFloat(v) || 0
+  const w = num(svg.getAttribute('width')) * ex, h = num(svg.getAttribute('height')) * ex
+  const depth = -num(svg.style.verticalAlign) * ex
+  return { svg, w, h, depth }
+}
+function renderMath(root) {
+  const NS = 'http://www.w3.org/2000/svg'
+  const meter = document.createElementNS(NS, 'svg')
+  meter.setAttribute('style', 'position:absolute;left:-10000px;top:0;width:10px;height:10px')
+  document.body.appendChild(meter)
+  const widthOf = (txt, cls, fs, weight) => {
+    const m = document.createElementNS(NS, 'text')
+    if (cls) m.setAttribute('class', cls)
+    m.setAttribute('font-size', fs); if (weight) m.setAttribute('font-weight', weight)
+    m.style.whiteSpace = 'pre'; m.textContent = txt; meter.appendChild(m)
+    const v = m.getComputedTextLength(); m.remove(); return v
+  }
+  const svgTexts = new Set()
+  texNodes(root).forEach(n => {
+    const t = n.parentNode.closest('text')
+    if (t) { svgTexts.add(t); return }
+    const frag = document.createDocumentFragment(), str = n.nodeValue
+    let last = 0, m
+    TEX_RE.lastIndex = 0
+    while ((m = TEX_RE.exec(str))) {
+      frag.append(str.slice(last, m.index))
+      const c = MathJax.tex2svg(m[1], { display: false }); c.setAttribute('data-tex', m[1]); frag.append(c)
+      last = TEX_RE.lastIndex
     }
-    plain(str.slice(last), !!(svg && shift))
+    frag.append(str.slice(last))
     n.parentNode.replaceChild(frag, n)
   })
+  svgTexts.forEach(t => {
+    const cs = getComputedStyle(t), str = t.textContent
+    const fs = parseFloat(t.getAttribute('font-size')) || parseFloat(cs.fontSize) || 20
+    const anchor = t.getAttribute('text-anchor') || cs.textAnchor || 'start'
+    const x = parseFloat(t.getAttribute('x')) || 0, y = parseFloat(t.getAttribute('y')) || 0
+    const cls = t.getAttribute('class') || '', weight = t.getAttribute('font-weight')
+    const g = document.createElementNS(NS, 'g')
+    for (const a of t.attributes) if (!['x', 'y', 'text-anchor', 'font-size', 'font-weight', 'dy', 'dx'].includes(a.name)) g.setAttribute(a.name, a.value)
+    g.setAttribute('class', (cls + ' tex').trim())
+    const pieces = []
+    let last = 0, m
+    TEX_RE.lastIndex = 0
+    while ((m = TEX_RE.exec(str))) {
+      if (m.index > last) pieces.push({ text: str.slice(last, m.index) })
+      pieces.push({ tex: m[1] }); last = TEX_RE.lastIndex
+    }
+    if (last < str.length) pieces.push({ text: str.slice(last) })
+    pieces.forEach(pc => {
+      if (pc.text !== undefined) {
+        const e = document.createElementNS(NS, 'text')
+        if (cls) e.setAttribute('class', cls)
+        e.setAttribute('font-size', fs); if (weight) e.setAttribute('font-weight', weight)
+        e.style.whiteSpace = 'pre'; e.textContent = pc.text
+        pc.el = e; pc.w = widthOf(pc.text, cls, fs, weight)
+      } else {
+        const r = texSvg(pc.tex, fs)
+        r.svg.style.verticalAlign = ''; r.svg.style.color = cs.fill
+        r.svg.setAttribute('width', r.w); r.svg.setAttribute('height', r.h)
+        r.svg.setAttribute('data-tex', pc.tex)
+        Object.assign(pc, { el: r.svg, w: r.w, h: r.h, depth: r.depth })
+      }
+    })
+    const total = pieces.reduce((a, pc) => a + pc.w, 0)
+    let cx = anchor === 'middle' ? x - total / 2 : anchor === 'end' ? x - total : x
+    pieces.forEach(pc => {
+      pc.el.setAttribute('x', cx)
+      pc.el.setAttribute('y', pc.text !== undefined ? y : y - (pc.h - pc.depth))
+      g.appendChild(pc.el); cx += pc.w
+    })
+    t.replaceWith(g)
+  })
+  meter.remove()
 }
-texify(document.querySelector('.deck') || document.body)
+const mathReady = hasMath
+  ? Promise.all([document.fonts ? document.fonts.ready : null, MathJax.startup.promise]).then(() => {
+      document.head.appendChild(MathJax.svgStylesheet())
+      renderMath(document.querySelector('.deck'))
+    }).catch(e => console.error('math render failed', e)).finally(() => document.documentElement.classList.remove('math-pending'))
+  : Promise.resolve()
 
 // 언어 전환: ?lang=en|ko, 저장된 선택, 기본 ko 순서로 정한다. L 키나 왼쪽 아래 버튼으로 바꾼다.
 const btn = document.querySelector('.langbtn')
@@ -690,6 +710,7 @@ const titleText = s => {
   const t = s.querySelector('.title'); if (!t) return ''
   const c = (t.querySelector(`:scope > [lang="${document.documentElement.dataset.lang}"]`) || t).cloneNode(true)
   c.querySelectorAll('br').forEach(b => b.replaceWith(' '))
+  c.querySelectorAll('mjx-container[data-tex]').forEach(e => e.replaceWith(e.getAttribute('data-tex')))
   return c.textContent.replace(/\s+/g, ' ').trim()
 }
 function openToc() {
@@ -829,7 +850,7 @@ function wrapIssues(s, k) {
   return out
 }
 if (/[?&]check\b/.test(location.search)) {
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+  Promise.all([document.fonts ? document.fonts.ready : null, mathReady]).then(() => {
     const bad = [], diag = []
     slides.forEach((s, k) => {
       // 단계마다 보이는 내용이 다르므로(data-only) 모든 단계를 잰다
