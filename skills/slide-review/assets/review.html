@@ -472,9 +472,16 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
     $('.status').textContent = busy;
     try {
       const blob = await getBlob();
-      if (handle) { const w = await handle.createWritable(); await w.write(blob); await w.close(); $('.status').textContent = handle.name + ' 저장됨'; return; }
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
-      $('.status').textContent = name + ' 다운로드됨';
+      // 저장 창은 열리지만 파일 쓰기를 막는 브라우저가 있다(예: Orca의 "The request is not allowed by the user agent").
+      // 그때는 고른 위치에 쓰지 못하므로 다운로드 폴더로 받는다
+      let fallback = false;
+      if (handle) {
+        try { const w = await handle.createWritable(); await w.write(blob); await w.close(); $('.status').textContent = handle.name + ' 저장됨'; return; }
+        catch (e) { fallback = true; }
+      }
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      $('.status').textContent = fallback ? '이 브라우저가 고른 위치에 쓰기를 막아 다운로드 폴더로 받았다: ' + name : name + ' 다운로드됨';
     } catch (e) { $('.status').textContent = '저장 실패: ' + e.message; }
   };
   $('.dl.html').onclick = () => saveFile(stem + '.html', 'text/html', '.html',
