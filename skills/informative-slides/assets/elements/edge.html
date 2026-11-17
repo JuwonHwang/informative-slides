@@ -1,0 +1,28 @@
+<!-- 요소: 화살표 (edge) · 묶음: 그림 부품
+     데이터가 옮겨 가는 경로와 조건부 경로
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. 그림 원본: diagram-sp-edge. 덱에 같은 id가 있으면 이름을 바꾼다. -->
+<template id="diagram-sp-edge">
+  <svg viewBox="0 0 1500 500" role="img" aria-label="arrows">
+    <g data-part="a"><rect class="box" x="40" y="60" width="240" height="110" rx="10"/><text class="name" x="160" y="125" text-anchor="middle" font-size="26">주문 API</text></g>
+    <g data-part="b"><rect class="box" x="620" y="60" width="240" height="110" rx="10"/><text class="name" x="740" y="125" text-anchor="middle" font-size="26">결제 승인</text></g>
+    <g data-part="c"><rect class="box" x="1200" y="60" width="240" height="110" rx="10"/><text class="name" x="1320" y="125" text-anchor="middle" font-size="26">주문 완료</text></g>
+    <g data-part="d"><rect class="box" x="620" y="340" width="240" height="110" rx="10"/><text class="name" x="740" y="405" text-anchor="middle" font-size="26">재시도 큐</text></g>
+    <path class="edge main" data-part="a b" d="M280,115 L616,115"/>
+    <text class="label" x="448" y="100" text-anchor="middle" font-size="21">주문 1건 (주 경로)</text>
+    <path class="edge main" data-part="b c" d="M860,115 L1196,115"/>
+    <text class="label" x="1028" y="100" text-anchor="middle" font-size="21">승인 결과</text>
+    <path class="edge opt" data-part="b d" d="M740,170 L740,336"/>
+    <text class="label" x="756" y="262" font-size="21">3초 초과? 예: 재시도</text>
+    <path class="edge" data-part="d a" d="M620,395 L160,395 L160,174"/>
+    <text class="label" x="390" y="380" text-anchor="middle" font-size="21">다시 보내기 (꺾인 경로)</text>
+  </svg>
+</template>
+<section class="slide">
+  <div class="eyebrow">머리표</div>
+  <h2 class="title">주문 처리의 주 경로, 조건부 경로, 꺾인 경로 (설명용 예시)</h2>
+  <p class="lead">주 경로는 굵은 선, 조건이 맞을 때만 지나는 경로는 점선이다.</p>
+  <div class="figure" data-diagram="sp-edge"></div>
+  <div class="source">출처: 설명용 예시</div>
+</section>

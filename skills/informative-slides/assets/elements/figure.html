@@ -1,0 +1,87 @@
+<!-- 요소: 그림 패널 (figure) · 묶음: 그림 부품
+     그림과 그래프를 올리는 바탕
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. 그림 원본: diagram-cycle. 덱에 같은 id가 있으면 이름을 바꾼다. -->
+<template id="diagram-cycle">
+  <!-- 행 3개(위 20~140, 가운데 220~340, 아래 420~540), 열 3개(A 20~250, B 385~615, C 750~980).
+       굵은 화살표(edge main)는 미팅마다 반복하는 주 경로, 점선(edge opt)은 조건이 맞을 때만 지나는 경로이다. -->
+  <svg viewBox="0 0 1000 560" role="img" aria-label="informative-slides">
+    <g data-part="goal">
+      <rect class="box" x="20" y="20" width="230" height="120" rx="10"/>
+      <text class="name" x="135" y="70" text-anchor="middle" font-size="26">① 목표 작성</text>
+      <text class="sub" x="135" y="108" text-anchor="middle" font-size="22">(goal)</text>
+    </g>
+    <path class="edge" data-part="goal goalmd" d="M135,140 L135,218"/>
+
+    <g data-part="goalmd" class="c1">
+      <rect class="box data" x="20" y="220" width="230" height="120" rx="0"/>
+      <text class="name" x="135" y="270" text-anchor="middle" font-size="26">GOAL.md</text>
+      <text class="sub" x="135" y="308" text-anchor="middle" font-size="22">목표·달성 기준·일정</text>
+    </g>
+    <path class="edge" data-part="goalmd walk" d="M250,300 L383,300"/>
+    <text class="label" data-part="goalmd walk" x="317" y="290" text-anchor="middle" font-size="20">달성 기준</text>
+
+    <g data-part="walk">
+      <rect class="box" x="385" y="220" width="230" height="120" rx="10"/>
+      <text class="name" x="500" y="270" text-anchor="middle" font-size="26">② 자료 준비</text>
+      <text class="sub" x="500" y="308" text-anchor="middle" font-size="22">(meet)</text>
+    </g>
+    <path class="edge main" data-part="walk meeting" d="M615,300 L746,300"/>
+    <text class="label" data-part="walk meeting" x="682" y="278" text-anchor="middle" font-size="20">설명 자료</text>
+
+    <g data-part="meeting">
+      <rect class="box" x="750" y="220" width="230" height="120" rx="10"/>
+      <text class="name" x="865" y="270" text-anchor="middle" font-size="26">③ 미팅</text>
+      <text class="sub" x="865" y="308" text-anchor="middle" font-size="22">사용자가 결정</text>
+    </g>
+    <path class="edge main" data-part="meeting after" d="M865,340 L865,416"/>
+    <text class="label" data-part="meeting after" x="851" y="374" text-anchor="end" font-size="20">사용자가 정한 것</text>
+
+    <g data-part="after">
+      <rect class="box" x="750" y="420" width="230" height="120" rx="10"/>
+      <text class="name" x="865" y="470" text-anchor="middle" font-size="26">④ 노트 작성</text>
+      <text class="sub" x="865" y="508" text-anchor="middle" font-size="22">(meet)</text>
+    </g>
+    <path class="edge main" data-part="after note" d="M750,480 L619,480"/>
+    <path class="edge opt" data-part="after goalmd" d="M980,480 L992,480 L992,180 L318,180 L318,240 L254,240"/>
+    <text class="label" data-part="after goalmd" x="655" y="170" text-anchor="middle" font-size="20">사용자가 목표 자체를 조정할 때만</text>
+
+    <g data-part="note" class="new">
+      <rect class="box data" x="385" y="420" width="230" height="120" rx="0"/>
+      <text class="name" x="500" y="470" text-anchor="middle" font-size="26">note.md</text>
+      <text class="sub" x="500" y="508" text-anchor="middle" font-size="22">결정·할 일·질문</text>
+    </g>
+    <path class="edge main" data-part="note walk" d="M500,420 L500,344"/>
+    <text class="label" data-part="note walk" x="514" y="400" font-size="20">다음 미팅의 리마인드</text>
+
+    <g data-part="wrapup">
+      <rect class="box" x="20" y="420" width="230" height="120" rx="10"/>
+      <text class="name" x="135" y="470" text-anchor="middle" font-size="26">⑤ 발표 자료</text>
+      <text class="sub" x="135" y="508" text-anchor="middle" font-size="22">(wrapup)</text>
+    </g>
+    <path class="edge" data-part="goalmd wrapup" d="M135,340 L135,416"/>
+    <text class="label" data-part="goalmd wrapup" x="149" y="386" font-size="20">배경, 목표</text>
+
+    <!-- 미팅에서 정한 것(작은 칸): 노트 작성 단계(5단계)에 미팅 상자에서 note.md로 옮겨진다. 상자보다 뒤에 두어야 상자에 가리지 않는다 -->
+    <rect class="cell1 new" data-part="meeting note" data-at="0,0;0,0;0,0;0,0;-370,200" x="946" y="300" width="26" height="26" rx="3"/>
+
+    <g class="legend">
+      <rect class="box" x="400" y="34" width="34" height="22" rx="4"/>
+      <text class="sub" x="446" y="53" font-size="20">처리 단계</text>
+      <rect class="box data" x="660" y="34" width="34" height="22" rx="0"/>
+      <text class="sub" x="706" y="53" font-size="20">기록 파일</text>
+      <line x1="400" y1="100" x2="440" y2="100" stroke="#1b1b1b" stroke-width="3.5"/>
+      <text class="sub" x="446" y="107" font-size="20">미팅마다</text>
+      <line x1="660" y1="100" x2="700" y2="100" stroke="#1b1b1b" stroke-width="2" stroke-dasharray="8 6"/>
+      <text class="sub" x="706" y="107" font-size="20">조건이 맞을 때만</text>
+    </g>
+  </svg>
+</template>
+<section class="slide">
+  <div class="eyebrow">머리표</div>
+  <h2 class="title">미팅 주기의 스킬과 기록 파일 (스킬 3개, 기록 2개)</h2>
+  <p class="lead">그림은 패널 위에 두고, 패널의 바탕과 모서리는 덱 전체에서 같다.</p>
+  <div class="figure" data-diagram="cycle"></div>
+  <div class="source">출처: skills/*/SKILL.md</div>
+</section>

@@ -1,0 +1,14 @@
+<!-- 요소: 강조 상자 (callout) · 묶음: 텍스트 상자
+     반드시 기억할 사실(crit)이나 처음 보는 결과(new)를 한두 문장으로
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. -->
+<section class="slide">
+  <div class="eyebrow">마이그레이션 조건</div>
+  <h2 class="title">정산 원장 기록 서비스의 전환 조건 (비동기 전환 후)</h2>
+  <p class="lead">전환 전에 유실 0건과 순서 보장을 함께 확인해야 한다.</p>
+  <p class="callout crit"><strong>반드시 기억할 조건:</strong> 같은 주문의 기록은 발행 순서대로 처리한다.</p>
+  <p class="callout new"><strong>처음 보는 결과:</strong> 재시도 큐를 거친 기록도 순서가 유지되었다(시험 3회).</p>
+  <p class="callout"><strong>참고:</strong> 기록 지연은 느린 1% 기준 2.1초이다.</p>
+  <div class="source">출처: 설명용 예시</div>
+</section>

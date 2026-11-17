@@ -1,0 +1,45 @@
+<!-- 요소: 데이터 칸 (cell) · 묶음: 그림 부품
+     입력, 행렬, 파일 같은 데이터의 각진 칸과 격자
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. 그림 원본: diagram-sp-cell. 덱에 같은 id가 있으면 이름을 바꾼다. -->
+<template id="diagram-sp-cell">
+  <svg viewBox="0 0 1500 520" role="img" aria-label="cells">
+    <text class="panel" x="40" y="50" font-size="24">(a) 질문 행렬 \(Q\) (4×2)</text>
+    <g>
+      <rect class="box data" x="40" y="80" width="90" height="70" rx="0"/><rect class="box data" x="130" y="80" width="90" height="70" rx="0"/>
+      <rect class="box data" x="40" y="150" width="90" height="70" rx="0"/><rect class="box data" x="130" y="150" width="90" height="70" rx="0"/>
+      <rect class="box data" x="40" y="220" width="90" height="70" rx="0"/><rect class="box data" x="130" y="220" width="90" height="70" rx="0"/>
+      <rect class="box data" x="40" y="290" width="90" height="70" rx="0"/><rect class="box data" x="130" y="290" width="90" height="70" rx="0"/>
+      <text x="85" y="124" text-anchor="middle" font-size="24">1</text><text x="175" y="124" text-anchor="middle" font-size="24">0</text>
+      <text x="85" y="194" text-anchor="middle" font-size="24">2</text><text x="175" y="194" text-anchor="middle" font-size="24">1</text>
+      <text x="85" y="264" text-anchor="middle" font-size="24">0</text><text x="175" y="264" text-anchor="middle" font-size="24">3</text>
+      <text x="85" y="334" text-anchor="middle" font-size="24">1</text><text x="175" y="334" text-anchor="middle" font-size="24">1</text>
+    </g>
+    <text class="panel" x="380" y="50" font-size="24">(b) 점수 행렬 \(S\) (4×4), 계산한 칸</text>
+    <g data-part="s">
+      <rect class="cell1" x="380" y="80" width="70" height="70"/><rect class="cell1" x="450" y="80" width="70" height="70"/><rect class="cell0" x="520" y="80" width="70" height="70"/><rect class="cell0" x="590" y="80" width="70" height="70"/>
+      <rect class="cell1" x="380" y="150" width="70" height="70"/><rect class="cell1" x="450" y="150" width="70" height="70"/><rect class="cell0" x="520" y="150" width="70" height="70"/><rect class="cell0" x="590" y="150" width="70" height="70"/>
+      <rect class="cell0" x="380" y="220" width="70" height="70"/><rect class="cell0" x="450" y="220" width="70" height="70"/><rect class="cell0" x="520" y="220" width="70" height="70"/><rect class="cell0" x="590" y="220" width="70" height="70"/>
+      <rect class="cell0" x="380" y="290" width="70" height="70"/><rect class="cell0" x="450" y="290" width="70" height="70"/><rect class="cell0" x="520" y="290" width="70" height="70"/><rect class="cell0" x="590" y="290" width="70" height="70"/>
+    </g>
+    <text class="panel" x="780" y="50" font-size="24">(c) 토큰 줄 (8개)</text>
+    <g>
+      <rect class="box data" x="780" y="120" width="70" height="70" rx="0"/><rect class="box data" x="850" y="120" width="70" height="70" rx="0"/><rect class="box data" x="920" y="120" width="70" height="70" rx="0"/><rect class="box data" x="990" y="120" width="70" height="70" rx="0"/>
+      <rect class="box data" x="1060" y="120" width="70" height="70" rx="0"/><rect class="box data" x="1130" y="120" width="70" height="70" rx="0"/><rect class="box data" x="1200" y="120" width="70" height="70" rx="0"/><rect class="box data" x="1270" y="120" width="70" height="70" rx="0"/>
+      <rect class="cell1 new" x="920" y="120" width="70" height="70"/>
+      <text class="label" x="780" y="240" font-size="21">채운 칸(new): 지금 처리하는 토큰</text>
+    </g>
+    <g class="legend">
+      <rect class="cell1" x="780" y="300" width="30" height="30"/><text class="sub" x="822" y="323" font-size="20">계산한 칸</text>
+      <rect class="cell0" x="1000" y="300" width="30" height="30"/><text class="sub" x="1042" y="323" font-size="20">아직 계산하지 않은 칸</text>
+    </g>
+  </svg>
+</template>
+<section class="slide">
+  <div class="eyebrow">머리표</div>
+  <h2 class="title">행렬과 토큰 줄의 데이터 칸 (설명용 예시)</h2>
+  <p class="lead">데이터는 각진 칸 격자로 그리고, 칸 안에 예시 값을 쓴다.</p>
+  <div class="figure" data-diagram="sp-cell"></div>
+  <div class="source">출처: 설명용 예시</div>
+</section>

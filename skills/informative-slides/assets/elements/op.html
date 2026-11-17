@@ -1,0 +1,32 @@
+<!-- 요소: 원소 연산 기호 (op) · 묶음: 그림 부품
+     ⊕, ⊗, exp, max처럼 원 안에 쓰는 연산
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. 그림 원본: diagram-sp-op. 덱에 같은 id가 있으면 이름을 바꾼다. -->
+<template id="diagram-sp-op">
+  <svg viewBox="0 0 1500 460" role="img" aria-label="operations">
+    <g data-part="q"><rect class="box data" x="40" y="80" width="200" height="90" rx="0"/><text class="name" x="140" y="135" text-anchor="middle" font-size="24">점수 \(S\)</text></g>
+    <path class="edge" data-part="q m" d="M240,125 L372,125"/>
+    <g class="op" data-part="m" transform="translate(400,125)"><circle r="26"/><text font-size="22">max</text></g>
+    <path class="edge" data-part="m e" d="M426,125 L572,125"/>
+    <g class="op" data-part="e" transform="translate(600,125)"><circle r="26"/><text font-size="22">exp</text></g>
+    <path class="edge" data-part="e x" d="M626,125 L772,125"/>
+    <g class="op" data-part="x" transform="translate(800,125)"><circle r="26"/><text font-size="26">⊗</text></g>
+    <g data-part="v"><rect class="box data" x="700" y="270" width="200" height="90" rx="0"/><text class="name" x="800" y="325" text-anchor="middle" font-size="24">값 행렬 \(V\)</text></g>
+    <path class="edge" data-part="v x" d="M800,270 L800,154"/>
+    <path class="edge" data-part="x p" d="M826,125 L972,125"/>
+    <g class="op" data-part="p" transform="translate(1000,125)"><circle r="26"/><text font-size="26">⊕</text></g>
+    <path class="edge" data-part="p o" d="M1026,125 L1196,125"/>
+    <g data-part="o"><rect class="box data" x="1200" y="80" width="220" height="90" rx="0"/><text class="name" x="1310" y="135" text-anchor="middle" font-size="24">출력 \(O\)</text></g>
+    <text class="label" x="400" y="210" text-anchor="middle" font-size="20">행 최댓값</text>
+    <text class="label" x="600" y="210" text-anchor="middle" font-size="20">지수</text>
+    <text class="label" x="1000" y="210" text-anchor="middle" font-size="20">블록 합</text>
+  </svg>
+</template>
+<section class="slide">
+  <div class="eyebrow">머리표</div>
+  <h2 class="title">블록 softmax 계산의 원소 연산 순서 (max, exp, 곱, 합)</h2>
+  <p class="lead">원소 연산은 원 안의 기호로 그리고, 처리 상자와 모양으로 구분한다.</p>
+  <div class="figure" data-diagram="sp-op"></div>
+  <div class="source">출처: 설명용 예시</div>
+</section>

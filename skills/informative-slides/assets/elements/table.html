@@ -1,0 +1,19 @@
+<!-- 요소: 표 (table) · 묶음: 표와 목록
+     수치를 비교하는 표
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. -->
+<section class="slide">
+  <div class="eyebrow">대안 비교 2/3</div>
+  <h2 class="title">후처리 호출 대안 3개의 응답 시간과 유실 (부하 시험 3회 평균)</h2>
+  <p class="lead">이벤트 기록 테이블 경유 발행(B안)만 두 목표를 함께 충족한다.</p>
+  <div class="figure top">
+    <table>
+      <tr><th>대안</th><th>느린 1% 응답 시간</th><th>유실</th><th>작업량</th></tr>
+      <tr><td>동기 호출 유지</td><td class="num">3,200 ms</td><td class="num">0건</td><td class="num">0주</td></tr>
+      <tr class="hl"><td>이벤트 기록 테이블 경유 발행 (B안)</td><td class="num">640 ms</td><td class="num">0건</td><td class="num">6주</td></tr>
+      <tr><td>메시지 큐 직접 발행</td><td class="num">520 ms</td><td class="num">12건</td><td class="num">3주</td></tr>
+    </table>
+  </div>
+  <div class="source">출처: 설명용 예시</div>
+</section>

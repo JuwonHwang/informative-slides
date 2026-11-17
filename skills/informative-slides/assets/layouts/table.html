@@ -1,0 +1,26 @@
+<!-- 장 배치: table · 수치 표: 비교 표와 강조 행
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     규칙은 rules/slides.md 5절(요소별 표현)과 9절(템플릿 구성 요소)이다. 예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. -->
+<section class="slide" data-layout="table">
+  <div class="eyebrow">미팅 주기 구조 2/2</div>
+  <h2 class="title">
+    파일별 작성 스킬과 작성 시점
+  </h2>
+  <p class="lead">
+    파일마다 쓰는 스킬이 하나뿐이어서, 어떤 내용이 어디에 있는지 스킬 이름으로 알 수 있다.
+  </p>
+  <div class="figure">
+    <table>
+      <tr>
+        <th>파일</th>
+        <th>쓰는 스킬</th>
+        <th>시점</th>
+      </tr>
+      <tr><td class="c1">GOAL.md</td><td>goal, meet</td><td>처음 한 번, 목표를 조정할 때</td></tr>
+      <tr><td>meetings/…-slides.md · .html</td><td>meet</td><td>미팅 전</td></tr>
+      <tr><td class="new">meetings/…-note.md</td><td>meet</td><td>미팅 뒤</td></tr>
+      <tr><td>wrapup/…-&lt;audience&gt;.md · .html</td><td>wrapup</td><td>발표가 필요할 때</td></tr>
+    </table>
+  </div>
+  <div class="source">출처: skills/*/SKILL.md</div>
+</section>

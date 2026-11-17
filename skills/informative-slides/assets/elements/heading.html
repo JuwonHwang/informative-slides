@@ -1,0 +1,16 @@
+<!-- 요소: 제목과 머리표 (heading) · 묶음: 텍스트 상자
+     장 맨 위의 머리표(절 이름)와 제목
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. -->
+<section class="slide">
+  <div class="eyebrow">대안 비교 1/3</div>
+  <h2 class="title">주문 API 후처리 호출 구조의 대안 3개 (응답 시간 기준)</h2>
+  <p class="lead">이벤트 기록 테이블을 거쳐 발행하는 방식만 응답 시간 목표와 유실 0건을 함께 충족한다.</p>
+  <ul class="points">
+    <li><strong>목표:</strong> 느린 1% 요청의 응답 시간 (p99) 800ms 이하</li>
+    <li><strong>조건:</strong> 피크 초당 처리 건수 1,450건, 후처리 5개</li>
+    <li><strong>측정:</strong> 부하 시험 3회 평균</li>
+  </ul>
+  <div class="source">출처: 설명용 예시</div>
+</section>

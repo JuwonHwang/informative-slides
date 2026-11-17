@@ -1,0 +1,26 @@
+<!-- 요소: 묶음 테두리 (group) · 묶음: 그림 부품
+     한 모듈로 묶이는 요소를 감싸는 테두리
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. 그림 원본: diagram-sp-group. 덱에 같은 id가 있으면 이름을 바꾼다. -->
+<template id="diagram-sp-group">
+  <svg viewBox="0 0 1500 500" role="img" aria-label="group">
+    <rect class="group" x="300" y="70" width="760" height="300"/>
+    <text class="label" x="316" y="58" font-size="22">Transformer 층</text>
+    <text class="label" x="1040" y="400" text-anchor="end" font-size="24">×12</text>
+    <g data-part="a"><rect class="box" x="350" y="160" width="300" height="120" rx="10"/><text class="name" x="500" y="212" text-anchor="middle" font-size="26">어텐션</text><text class="sub" x="500" y="250" text-anchor="middle" font-size="20">토큰 사이 가중합</text></g>
+    <g data-part="b"><rect class="box" x="710" y="160" width="300" height="120" rx="10"/><text class="name" x="860" y="212" text-anchor="middle" font-size="26">피드포워드</text><text class="sub" x="860" y="250" text-anchor="middle" font-size="20">토큰마다 MLP</text></g>
+    <path class="edge" data-part="a b" d="M650,220 L706,220"/>
+    <g data-part="in"><rect class="box data" x="40" y="180" width="200" height="80" rx="0"/><text class="name" x="140" y="230" text-anchor="middle" font-size="22">입력 토큰</text></g>
+    <path class="edge" data-part="in a" d="M240,220 L346,220"/>
+    <g data-part="out"><rect class="box data" x="1140" y="180" width="200" height="80" rx="0"/><text class="name" x="1240" y="230" text-anchor="middle" font-size="22">출력 표현</text></g>
+    <path class="edge" data-part="b out" d="M1010,220 L1136,220"/>
+  </svg>
+</template>
+<section class="slide">
+  <div class="eyebrow">머리표</div>
+  <h2 class="title">반복되는 Transformer 층의 묶음 테두리 (12층)</h2>
+  <p class="lead">한 모듈로 묶이는 처리는 테두리로 감싸고, 반복 횟수를 오른쪽 아래에 쓴다.</p>
+  <div class="figure" data-diagram="sp-group"></div>
+  <div class="source">출처: 설명용 예시</div>
+</section>

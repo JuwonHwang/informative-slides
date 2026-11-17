@@ -1,0 +1,2216 @@
+{
+ "groups": [
+  {
+   "id": "diagram",
+   "name": "그림 부품",
+   "items": [
+    "box",
+    "cell",
+    "edge",
+    "group",
+    "op",
+    "focus",
+    "figure"
+   ]
+  },
+  {
+   "id": "chart",
+   "name": "그래프",
+   "items": [
+    "chart",
+    "bar",
+    "line",
+    "scatter"
+   ]
+  },
+  {
+   "id": "text",
+   "name": "텍스트 상자",
+   "items": [
+    "heading",
+    "lead",
+    "narration",
+    "callout",
+    "recap",
+    "caption"
+   ]
+  },
+  {
+   "id": "list",
+   "name": "표와 목록",
+   "items": [
+    "table",
+    "bullets",
+    "option"
+   ]
+  }
+ ],
+ "components": {
+  "box": {
+   "name": "처리 상자",
+   "desc": "모델, 층, 서비스처럼 처리하는 구성 요소의 둥근 상자",
+   "props": {
+    "radius": {
+     "label": "모서리",
+     "axis": "모양",
+     "type": "choice",
+     "default": "attr",
+     "options": {
+      "0": {
+       "label": "각짐",
+       "rule": "svg rect.box:not(.data){rx:calc(var(--su,1) * 0px)}",
+       "t": 0
+      },
+      "4": {
+       "label": "살짝 둥글게",
+       "rule": "svg rect.box:not(.data){rx:calc(var(--su,1) * 4px)}",
+       "t": 0.2
+      },
+      "attr": {
+       "label": "보통(10)",
+       "t": 0.4
+      },
+      "18": {
+       "label": "둥글게",
+       "rule": "svg rect.box:not(.data){rx:calc(var(--su,1) * 18px)}",
+       "t": 0.7
+      },
+      "28": {
+       "label": "많이 둥글게",
+       "rule": "svg rect.box:not(.data){rx:calc(var(--su,1) * 28px)}",
+       "t": 1
+      }
+     },
+     "trait": "round"
+    },
+    "stroke": {
+     "label": "테두리 굵기",
+     "axis": "굵기",
+     "type": "num",
+     "var": "--box-sw",
+     "min": 1,
+     "max": 5,
+     "step": 1,
+     "default": 2,
+     "unit": "",
+     "trait": "weight"
+    },
+    "fill": {
+     "label": "바탕",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "white",
+     "options": {
+      "white": {
+       "label": "흰색",
+       "t": 0.4
+      },
+      "gray": {
+       "label": "연한 회색",
+       "vars": {
+        "--box-fill": "#f1f3f5"
+       },
+       "t": 1
+      },
+      "none": {
+       "label": "투명",
+       "vars": {
+        "--box-fill": "transparent"
+       },
+       "t": 0
+      }
+     },
+     "trait": "fill"
+    },
+    "color": {
+     "label": "테두리 색",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "dark",
+     "options": {
+      "dark": {
+       "label": "진한 검정",
+       "t": 1
+      },
+      "mid": {
+       "label": "회색",
+       "vars": {
+        "--box-c": "#6b7280"
+       },
+       "t": 0
+      }
+     },
+     "trait": "contrast"
+    },
+    "tint": {
+     "label": "색 상자 채움",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "tint",
+     "options": {
+      "tint": {
+       "label": "연한 색"
+      },
+      "white": {
+       "label": "흰색, 테두리만 색",
+       "rule": "svg g.new .box,svg g.crit .box,svg g.c1 .box,svg g.c2 .box,svg g.c3 .box,svg g.c4 .box{fill:#fff}"
+      },
+      "strong": {
+       "label": "진한 연한 색",
+       "rule": "svg g.new .box{fill:#bae6fd} svg g.crit .box{fill:#fecaca} svg g.c1 .box{fill:#ddd6fe} svg g.c2 .box{fill:#bbf7d0} svg g.c3 .box{fill:#fde68a} svg g.c4 .box{fill:#cbd5e1}"
+      }
+     }
+    },
+    "name": {
+     "label": "이름 굵기",
+     "axis": "글자",
+     "type": "choice",
+     "default": "700",
+     "options": {
+      "600": {
+       "label": "중간",
+       "vars": {
+        "--name-w": "600"
+       },
+       "t": 0
+      },
+      "700": {
+       "label": "굵게",
+       "t": 0.5
+      },
+      "800": {
+       "label": "아주 굵게",
+       "vars": {
+        "--name-w": "800"
+       },
+       "t": 1
+      }
+     },
+     "trait": "bold"
+    }
+   },
+   "selected": {
+    "radius": "28",
+    "stroke": 3.0,
+    "color": "mid",
+    "name": "600"
+   },
+   "view": {
+    "zoom": 1.8,
+    "origin": "50% 58%"
+   },
+   "prominence": 1,
+   "reviewed": true
+  },
+  "cell": {
+   "name": "데이터 칸",
+   "desc": "입력, 행렬, 파일 같은 데이터의 각진 칸과 격자",
+   "props": {
+    "stroke": {
+     "label": "칸 선 굵기",
+     "axis": "굵기",
+     "type": "num",
+     "var": "--cell-sw",
+     "min": 0.5,
+     "max": 3.5,
+     "step": 0.75,
+     "default": 1.5,
+     "unit": "",
+     "trait": "weight"
+    },
+    "fill": {
+     "label": "칸 바탕",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "light",
+     "options": {
+      "light": {
+       "label": "연한 회색"
+      },
+      "white": {
+       "label": "흰색",
+       "vars": {
+        "--cell-fill": "#fff"
+       }
+      },
+      "mid": {
+       "label": "회색",
+       "vars": {
+        "--cell-fill": "#dde1e6"
+       }
+      }
+     }
+    },
+    "on": {
+     "label": "채운 칸 색",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "dark",
+     "options": {
+      "dark": {
+       "label": "진회색"
+      },
+      "black": {
+       "label": "검정",
+       "vars": {
+        "--cell-on": "#1b1b1b"
+       }
+      },
+      "blue": {
+       "label": "하늘색",
+       "vars": {
+        "--cell-on": "#0284c7"
+       }
+      },
+      "light": {
+       "label": "연한 회색",
+       "vars": {
+        "--cell-on": "#9ca3af"
+       }
+      }
+     }
+    },
+    "radius": {
+     "label": "칸 모서리",
+     "axis": "모양",
+     "type": "choice",
+     "default": "0",
+     "options": {
+      "0": {
+       "label": "각짐",
+       "t": 0
+      },
+      "3": {
+       "label": "살짝 둥글게",
+       "rule": "svg rect.box.data,svg rect.cell0,svg rect.cell1{rx:calc(var(--su,1) * 3px)}",
+       "t": 0.5
+      },
+      "6": {
+       "label": "둥글게",
+       "rule": "svg rect.box.data,svg rect.cell0,svg rect.cell1{rx:calc(var(--su,1) * 6px)}",
+       "t": 1
+      }
+     },
+     "trait": "round"
+    }
+   },
+   "selected": {
+    "radius": "3"
+   },
+   "view": {
+    "zoom": 1.6,
+    "origin": "45% 55%"
+   },
+   "prominence": 0.7,
+   "reviewed": true
+  },
+  "edge": {
+   "name": "화살표",
+   "desc": "데이터가 옮겨 가는 경로와 조건부 경로",
+   "props": {
+    "width": {
+     "label": "선 굵기",
+     "axis": "굵기",
+     "type": "num",
+     "var": "--edge-s",
+     "min": 0.5,
+     "max": 2.6,
+     "step": 0.3,
+     "default": 1,
+     "unit": "x",
+     "trait": "weight"
+    },
+    "main": {
+     "label": "주 경로 굵기 비율",
+     "axis": "굵기",
+     "type": "num",
+     "var": "--edge-main",
+     "min": 1.0,
+     "max": 3.0,
+     "step": 0.4,
+     "default": 1.75,
+     "unit": "x"
+    },
+    "headsize": {
+     "label": "머리 크기",
+     "axis": "굵기",
+     "type": "num",
+     "var": "--edge-head-s",
+     "min": 0.5,
+     "max": 2,
+     "step": 0.25,
+     "default": 1,
+     "unit": "x"
+    },
+    "head": {
+     "label": "머리 모양",
+     "axis": "모양",
+     "type": "choice",
+     "default": "filled",
+     "options": {
+      "filled": {
+       "label": "채운 삼각"
+      },
+      "open": {
+       "label": "열린 V",
+       "vars": {
+        "--edge-head": "url(#arrow-open)"
+       }
+      },
+      "small": {
+       "label": "작은 삼각",
+       "vars": {
+        "--edge-head": "url(#arrow-small)"
+       }
+      },
+      "wide": {
+       "label": "넓은 촉",
+       "vars": {
+        "--edge-head": "url(#arrow-wide)"
+       }
+      },
+      "dot": {
+       "label": "점",
+       "vars": {
+        "--edge-head": "url(#arrow-dot)"
+       }
+      }
+     }
+    },
+    "join": {
+     "label": "꺾인 곳",
+     "axis": "모양",
+     "type": "choice",
+     "default": "sharp",
+     "options": {
+      "sharp": {
+       "label": "각지게",
+       "t": 0
+      },
+      "round": {
+       "label": "둥글게",
+       "vars": {
+        "--edge-join": "round",
+        "--edge-cap": "round"
+       },
+       "t": 1
+      }
+     },
+     "trait": "round"
+    },
+    "dash": {
+     "label": "조건부 경로 점선",
+     "axis": "모양",
+     "type": "choice",
+     "default": "8 6",
+     "options": {
+      "8 6": {
+       "label": "보통"
+      },
+      "3 4": {
+       "label": "촘촘하게",
+       "vars": {
+        "--edge-da": "3",
+        "--edge-db": "4"
+       }
+      },
+      "14 8": {
+       "label": "길게",
+       "vars": {
+        "--edge-da": "14",
+        "--edge-db": "8"
+       }
+      },
+      "1 6": {
+       "label": "점",
+       "vars": {
+        "--edge-cap": "round",
+        "--edge-da": "1",
+        "--edge-db": "6"
+       }
+      }
+     }
+    }
+   },
+   "selected": {
+    "head": "small",
+    "width": 0.5,
+    "headsize": 0.5
+   },
+   "view": {
+    "zoom": 1.6,
+    "origin": "50% 60%"
+   },
+   "prominence": 1,
+   "reviewed": true
+  },
+  "group": {
+   "name": "묶음 테두리",
+   "desc": "한 모듈로 묶이는 요소를 감싸는 테두리",
+   "props": {
+    "dash": {
+     "label": "선 모양",
+     "axis": "모양",
+     "type": "choice",
+     "default": "6 5",
+     "options": {
+      "6 5": {
+       "label": "점선"
+      },
+      "3 4": {
+       "label": "촘촘한 점선",
+       "vars": {
+        "--group-da": "3",
+        "--group-db": "4"
+       }
+      },
+      "12 6": {
+       "label": "긴 점선",
+       "vars": {
+        "--group-da": "12",
+        "--group-db": "6"
+       }
+      },
+      "none": {
+       "label": "실선",
+       "vars": {
+        "--group-da": "0",
+        "--group-db": "0"
+       }
+      }
+     }
+    },
+    "stroke": {
+     "label": "선 굵기",
+     "axis": "굵기",
+     "type": "num",
+     "var": "--group-sw",
+     "min": 1,
+     "max": 4,
+     "step": 0.75,
+     "default": 1.5,
+     "unit": "",
+     "trait": "weight"
+    },
+    "radius": {
+     "label": "모서리",
+     "axis": "모양",
+     "type": "choice",
+     "default": "12",
+     "options": {
+      "0": {
+       "label": "각짐",
+       "vars": {
+        "--group-r": "0px"
+       },
+       "t": 0
+      },
+      "6": {
+       "label": "살짝 둥글게",
+       "vars": {
+        "--group-r": "6px"
+       },
+       "t": 0.3
+      },
+      "12": {
+       "label": "둥글게",
+       "t": 0.6
+      },
+      "24": {
+       "label": "많이 둥글게",
+       "vars": {
+        "--group-r": "24px"
+       },
+       "t": 1
+      }
+     },
+     "trait": "round"
+    },
+    "color": {
+     "label": "선 색",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "mid",
+     "options": {
+      "mid": {
+       "label": "회색",
+       "t": 0.5
+      },
+      "light": {
+       "label": "연한 회색",
+       "vars": {
+        "--group-c": "#b4bac2"
+       },
+       "t": 0
+      },
+      "dark": {
+       "label": "진한 검정",
+       "vars": {
+        "--group-c": "#1b1b1b"
+       },
+       "t": 1
+      }
+     },
+     "trait": "contrast"
+    }
+   },
+   "selected": {
+    "color": "light"
+   },
+   "view": {
+    "zoom": 1.6,
+    "origin": "50% 55%"
+   },
+   "prominence": 0.5,
+   "reviewed": true
+  },
+  "op": {
+   "name": "원소 연산 기호",
+   "desc": "⊕, ⊗, exp, max처럼 원 안에 쓰는 연산",
+   "props": {
+    "stroke": {
+     "label": "원 테두리 굵기",
+     "axis": "굵기",
+     "type": "num",
+     "var": "--op-sw",
+     "min": 1,
+     "max": 4,
+     "step": 0.75,
+     "default": 2,
+     "unit": "",
+     "trait": "weight"
+    },
+    "fill": {
+     "label": "원 바탕",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "white",
+     "options": {
+      "white": {
+       "label": "흰색",
+       "t": 0.3
+      },
+      "gray": {
+       "label": "연한 회색",
+       "vars": {
+        "--op-fill": "#f1f3f5"
+       },
+       "t": 0.7
+      },
+      "dark": {
+       "label": "검정, 흰 기호",
+       "vars": {
+        "--op-fill": "#1b1b1b"
+       },
+       "rule": "svg .op text{fill:#fff}",
+       "t": 1
+      }
+     },
+     "trait": "fill"
+    },
+    "weight": {
+     "label": "기호 굵기",
+     "axis": "글자",
+     "type": "choice",
+     "default": "bold",
+     "options": {
+      "bold": {
+       "label": "굵게",
+       "t": 1
+      },
+      "normal": {
+       "label": "보통",
+       "rule": "svg .op text{font-weight:400}",
+       "t": 0
+      }
+     },
+     "trait": "bold"
+    }
+   },
+   "selected": {
+    "weight": "normal"
+   },
+   "view": {
+    "zoom": 1.8,
+    "origin": "50% 52%"
+   },
+   "prominence": 0.3,
+   "reviewed": true
+  },
+  "focus": {
+   "name": "강조 방식",
+   "desc": "단계와 부분 강조에서 지금 설명하지 않는 부분을 처리하는 방법",
+   "props": {
+    "dim": {
+     "label": "강조 밖 부분의 진하기",
+     "axis": "색·바탕",
+     "type": "num",
+     "var": "--dim",
+     "min": 0.05,
+     "max": 0.5,
+     "step": 0.09,
+     "default": 0.14,
+     "unit": "",
+     "trait": "contrast",
+     "invert": true
+    },
+    "mode": {
+     "label": "강조 밖 부분 처리",
+     "axis": "모양",
+     "type": "choice",
+     "default": "fade",
+     "options": {
+      "fade": {
+       "label": "흐리게"
+      },
+      "gray": {
+       "label": "흑백으로 흐리게",
+       "rule": ".dim{filter:grayscale(1)}"
+      },
+      "blur": {
+       "label": "흐리고 번지게",
+       "rule": ".dim{filter:blur(1.2px)}"
+      }
+     }
+    },
+    "frame": {
+     "label": "확대 테두리 굵기",
+     "axis": "굵기",
+     "type": "choice",
+     "default": "normal",
+     "options": {
+      "thin": {
+       "label": "가늘게",
+       "rule": "svg .zoom-frame{stroke-width:calc(var(--su,1) * 1.5)}",
+       "t": 0
+      },
+      "normal": {
+       "label": "보통",
+       "t": 0.5
+      },
+      "thick": {
+       "label": "굵게",
+       "rule": "svg .zoom-frame{stroke-width:calc(var(--su,1) * 4)}",
+       "t": 1
+      }
+     },
+     "trait": "weight"
+    }
+   },
+   "selected": {
+    "dim": 0.32,
+    "frame": "thin"
+   },
+   "view": {
+    "zoom": 1.4,
+    "origin": "55% 60%"
+   },
+   "prominence": 0.45,
+   "reviewed": true
+  },
+  "figure": {
+   "name": "그림 패널",
+   "desc": "그림과 그래프를 올리는 바탕",
+   "props": {
+    "bg": {
+     "label": "바탕",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "panel",
+     "options": {
+      "panel": {
+       "label": "연한 회색 패널",
+       "t": 1
+      },
+      "none": {
+       "label": "바탕 없음",
+       "vars": {
+        "--fig-bg": "transparent"
+       },
+       "t": 0
+      },
+      "outline": {
+       "label": "흰 바탕과 테두리",
+       "vars": {
+        "--fig-bg": "#fff",
+        "--fig-border": "1px solid #d6d6d6"
+       },
+       "t": 0.4
+      }
+     },
+     "trait": "fill"
+    },
+    "radius": {
+     "label": "모서리",
+     "axis": "모양",
+     "type": "choice",
+     "default": "8",
+     "options": {
+      "0": {
+       "label": "각짐",
+       "vars": {
+        "--fig-r": "0px"
+       },
+       "t": 0
+      },
+      "8": {
+       "label": "둥글게",
+       "t": 0.5
+      },
+      "16": {
+       "label": "많이 둥글게",
+       "vars": {
+        "--fig-r": "16px"
+       },
+       "t": 1
+      }
+     },
+     "trait": "round"
+    },
+    "pad": {
+     "label": "안쪽 여백",
+     "axis": "간격",
+     "type": "num",
+     "var": "--fig-pad",
+     "min": 0.3,
+     "max": 2.1,
+     "step": 0.3,
+     "default": 1,
+     "unit": "x",
+     "trait": "space"
+    }
+   },
+   "selected": {
+    "pad": 1.6
+   },
+   "view": {
+    "zoom": 1.25,
+    "origin": "50% 60%"
+   },
+   "prominence": 0.75,
+   "reviewed": true
+  },
+  "chart": {
+   "name": "그래프 공통",
+   "desc": "막대, 선, 점 그래프가 함께 쓰는 격자, 축, 글자, 계열 이름",
+   "props": {
+    "grid": {
+     "label": "격자선",
+     "axis": "모양",
+     "type": "choice",
+     "default": "solid",
+     "options": {
+      "solid": {
+       "label": "실선"
+      },
+      "dashed": {
+       "label": "점선",
+       "vars": {
+        "--chart-grid": "dashed"
+       }
+      },
+      "dotted": {
+       "label": "점",
+       "vars": {
+        "--chart-grid": "dotted"
+       }
+      },
+      "none": {
+       "label": "없음",
+       "vars": {
+        "--chart-grid": "none"
+       }
+      }
+     }
+    },
+    "axis": {
+     "label": "축선",
+     "axis": "모양",
+     "type": "choice",
+     "default": "x",
+     "options": {
+      "x": {
+       "label": "가로축만"
+      },
+      "xy": {
+       "label": "가로축과 세로축",
+       "vars": {
+        "--chart-axis": "xy"
+       }
+      },
+      "none": {
+       "label": "없음",
+       "vars": {
+        "--chart-axis": "none"
+       }
+      }
+     }
+    },
+    "fs": {
+     "label": "글자 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--chart-fs",
+     "min": 0.85,
+     "max": 1.45,
+     "step": 0.15,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    },
+    "series": {
+     "label": "계열 이름",
+     "axis": "모양",
+     "type": "choice",
+     "default": "legend",
+     "options": {
+      "legend": {
+       "label": "위쪽 범례"
+      },
+      "direct": {
+       "label": "선 끝에 직접",
+       "vars": {
+        "--series-label": "direct"
+       }
+      }
+     }
+    }
+   },
+   "selected": {
+    "fs": 1.15
+   },
+   "view": {
+    "zoom": 1.3,
+    "origin": "50% 62%"
+   },
+   "prominence": 0.55,
+   "reviewed": true
+  },
+  "bar": {
+   "name": "막대 그래프",
+   "desc": "범주마다 값을 막대로 비교한다",
+   "props": {
+    "width": {
+     "label": "막대 폭",
+     "axis": "크기",
+     "type": "num",
+     "var": "--bar-w",
+     "min": 0.3,
+     "max": 0.95,
+     "step": 0.15,
+     "default": 0.7,
+     "unit": ""
+    },
+    "radius": {
+     "label": "막대 모서리",
+     "axis": "모양",
+     "type": "choice",
+     "default": "2",
+     "options": {
+      "0": {
+       "label": "각짐",
+       "vars": {
+        "--bar-r": "0"
+       },
+       "t": 0
+      },
+      "2": {
+       "label": "살짝 둥글게",
+       "t": 0.25
+      },
+      "6": {
+       "label": "둥글게",
+       "vars": {
+        "--bar-r": "6"
+       },
+       "t": 0.6
+      },
+      "14": {
+       "label": "많이 둥글게",
+       "vars": {
+        "--bar-r": "14"
+       },
+       "t": 1
+      }
+     },
+     "trait": "round"
+    },
+    "label": {
+     "label": "값 라벨",
+     "axis": "모양",
+     "type": "choice",
+     "default": "top",
+     "options": {
+      "top": {
+       "label": "막대 위"
+      },
+      "inside": {
+       "label": "막대 안",
+       "vars": {
+        "--bar-label": "inside"
+       }
+      },
+      "none": {
+       "label": "없음",
+       "vars": {
+        "--bar-label": "none"
+       }
+      }
+     }
+    },
+    "dir": {
+     "label": "방향",
+     "axis": "모양",
+     "type": "choice",
+     "default": "v",
+     "options": {
+      "v": {
+       "label": "세로 막대"
+      },
+      "h": {
+       "label": "가로 막대",
+       "vars": {
+        "--bar-dir": "h"
+       }
+      }
+     }
+    }
+   },
+   "selected": {
+    "radius": "14"
+   },
+   "view": {
+    "zoom": 1.35,
+    "origin": "50% 62%"
+   },
+   "prominence": 0.8,
+   "reviewed": true
+  },
+  "line": {
+   "name": "선 그래프",
+   "desc": "순서가 있는 값의 변화를 선으로 보인다",
+   "props": {
+    "width": {
+     "label": "선 굵기",
+     "axis": "굵기",
+     "type": "num",
+     "var": "--line-w",
+     "min": 1.5,
+     "max": 7,
+     "step": 1,
+     "default": 2.5,
+     "unit": "",
+     "trait": "weight"
+    },
+    "marker": {
+     "label": "점 표시",
+     "axis": "모양",
+     "type": "choice",
+     "default": "dot",
+     "options": {
+      "dot": {
+       "label": "채운 점"
+      },
+      "ring": {
+       "label": "빈 원",
+       "vars": {
+        "--line-marker": "ring"
+       }
+      },
+      "end": {
+       "label": "끝점만",
+       "vars": {
+        "--line-marker": "end"
+       }
+      },
+      "none": {
+       "label": "없음",
+       "vars": {
+        "--line-marker": "none"
+       }
+      }
+     }
+    },
+    "curve": {
+     "label": "선 모양",
+     "axis": "모양",
+     "type": "choice",
+     "default": "straight",
+     "options": {
+      "straight": {
+       "label": "꺾은선"
+      },
+      "smooth": {
+       "label": "부드러운 곡선",
+       "vars": {
+        "--line-curve": "smooth"
+       }
+      }
+     }
+    },
+    "area": {
+     "label": "아래 면적",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "none",
+     "options": {
+      "none": {
+       "label": "없음"
+      },
+      "soft": {
+       "label": "연하게 채움",
+       "vars": {
+        "--line-area": "soft"
+       }
+      }
+     }
+    }
+   },
+   "selected": {
+    "width": 1.5,
+    "curve": "smooth"
+   },
+   "view": {
+    "zoom": 1.35,
+    "origin": "50% 62%"
+   },
+   "prominence": 0.6,
+   "reviewed": true
+  },
+  "scatter": {
+   "name": "점 그래프",
+   "desc": "두 값의 관계를 점으로 보인다",
+   "props": {
+    "size": {
+     "label": "점 크기",
+     "axis": "크기",
+     "type": "num",
+     "var": "--pt-r",
+     "min": 3,
+     "max": 13,
+     "step": 2,
+     "default": 6,
+     "unit": ""
+    },
+    "alpha": {
+     "label": "불투명도",
+     "axis": "색·바탕",
+     "type": "num",
+     "var": "--pt-alpha",
+     "min": 0.3,
+     "max": 1,
+     "step": 0.1,
+     "default": 0.75,
+     "unit": ""
+    },
+    "stroke": {
+     "label": "점 테두리",
+     "axis": "모양",
+     "type": "choice",
+     "default": "white",
+     "options": {
+      "white": {
+       "label": "흰 테두리"
+      },
+      "none": {
+       "label": "없음",
+       "vars": {
+        "--pt-stroke": "none"
+       }
+      },
+      "dark": {
+       "label": "같은 색 테두리",
+       "vars": {
+        "--pt-stroke": "dark"
+       }
+      }
+     }
+    },
+    "shapes": {
+     "label": "계열 구분",
+     "axis": "모양",
+     "type": "choice",
+     "default": "same",
+     "options": {
+      "same": {
+       "label": "색으로만"
+      },
+      "distinct": {
+       "label": "색과 모양",
+       "vars": {
+        "--pt-shapes": "distinct"
+       }
+      }
+     }
+    }
+   },
+   "selected": {
+    "alpha": 0.95,
+    "stroke": "none"
+   },
+   "view": {
+    "zoom": 1.35,
+    "origin": "50% 62%"
+   },
+   "prominence": 0.35,
+   "reviewed": true
+  },
+  "heading": {
+   "name": "제목과 머리표",
+   "desc": "장 맨 위의 머리표(절 이름)와 제목",
+   "props": {
+    "size": {
+     "label": "제목 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--title-s",
+     "min": 0.8,
+     "max": 1.4,
+     "step": 0.12,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    },
+    "weight": {
+     "label": "제목 굵기",
+     "axis": "글자",
+     "type": "choice",
+     "default": "700",
+     "options": {
+      "600": {
+       "label": "중간",
+       "vars": {
+        "--title-w": "600"
+       },
+       "t": 0
+      },
+      "700": {
+       "label": "굵게",
+       "t": 0.5
+      },
+      "800": {
+       "label": "아주 굵게",
+       "vars": {
+        "--title-w": "800"
+       },
+       "t": 1
+      }
+     },
+     "trait": "bold"
+    },
+    "tracking": {
+     "label": "제목 자간",
+     "axis": "글자",
+     "type": "choice",
+     "default": "0",
+     "options": {
+      "0": {
+       "label": "보통"
+      },
+      "-1": {
+       "label": "좁게",
+       "vars": {
+        "--title-ls": "-0.01em"
+       }
+      },
+      "-2": {
+       "label": "더 좁게",
+       "vars": {
+        "--title-ls": "-0.025em"
+       }
+      }
+     }
+    },
+    "eyebrow": {
+     "label": "머리표 모양",
+     "axis": "모양",
+     "type": "choice",
+     "default": "plain",
+     "options": {
+      "plain": {
+       "label": "회색 글자",
+       "t": 0
+      },
+      "line": {
+       "label": "앞에 짧은 선",
+       "rule": ".eyebrow::before{content:\"\";display:inline-block;width:2.2cqw;height:.22cqw;background:currentColor;vertical-align:middle;margin-right:.8cqw}",
+       "t": 0.3
+      },
+      "badge": {
+       "label": "회색 배지",
+       "rule": ".eyebrow{align-self:flex-start;background:var(--panel);padding:.5cqh .9cqw;border-radius:4px}",
+       "t": 1
+      },
+      "caps": {
+       "label": "넓은 자간, 굵게",
+       "vars": {
+        "--eyebrow-ls": ".12em",
+        "--eyebrow-w": "600"
+       },
+       "t": 0.2
+      }
+     },
+     "trait": "badge"
+    },
+    "esize": {
+     "label": "머리표 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--eyebrow-s",
+     "min": 0.85,
+     "max": 1.3,
+     "step": 0.1,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    },
+    "ecolor": {
+     "label": "머리표 색",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "muted",
+     "options": {
+      "muted": {
+       "label": "회색",
+       "t": 0
+      },
+      "fg": {
+       "label": "검정",
+       "vars": {
+        "--eyebrow-c": "#1b1b1b"
+       },
+       "t": 1
+      },
+      "new": {
+       "label": "하늘색",
+       "vars": {
+        "--eyebrow-c": "var(--new)"
+       },
+       "t": 1
+      }
+     },
+     "trait": "contrast"
+    }
+   },
+   "selected": {
+    "eyebrow": "badge",
+    "esize": 1.2
+   },
+   "view": {
+    "zoom": 1.6,
+    "origin": "20% 18%"
+   },
+   "prominence": 0.9,
+   "reviewed": true
+  },
+  "lead": {
+   "name": "메시지",
+   "desc": "장마다 한 문장으로 쓰는 메시지",
+   "props": {
+    "style": {
+     "label": "모양",
+     "axis": "모양",
+     "type": "choice",
+     "default": "bar",
+     "options": {
+      "bar": {
+       "label": "왼쪽 선"
+      },
+      "box": {
+       "label": "회색 상자",
+       "rule": ".lead{border-left:0;padding:1.6cqh 1.6cqw;background:var(--panel);border-radius:8px}"
+      },
+      "underline": {
+       "label": "아래 선",
+       "rule": ".lead{border-left:0;padding:0 0 1.4cqh;border-bottom:.2cqw solid #d6d6d6}"
+      },
+      "plain": {
+       "label": "선 없음",
+       "rule": ".lead{border-left:0;padding-left:0}"
+      }
+     }
+    },
+    "size": {
+     "label": "글자 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--lead-s",
+     "min": 0.8,
+     "max": 1.4,
+     "step": 0.12,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    },
+    "weight": {
+     "label": "굵기",
+     "axis": "글자",
+     "type": "choice",
+     "default": "500",
+     "options": {
+      "400": {
+       "label": "보통",
+       "vars": {
+        "--lead-w": "400"
+       },
+       "t": 0
+      },
+      "500": {
+       "label": "중간",
+       "t": 0.33
+      },
+      "600": {
+       "label": "굵게",
+       "vars": {
+        "--lead-w": "600"
+       },
+       "t": 0.67
+      },
+      "700": {
+       "label": "아주 굵게",
+       "vars": {
+        "--lead-w": "700"
+       },
+       "t": 1
+      }
+     },
+     "trait": "bold"
+    },
+    "barw": {
+     "label": "선 굵기",
+     "axis": "굵기",
+     "type": "choice",
+     "default": "normal",
+     "options": {
+      "thin": {
+       "label": "가늘게",
+       "vars": {
+        "--lead-bar-w": ".18cqw"
+       },
+       "t": 0
+      },
+      "normal": {
+       "label": "보통",
+       "t": 0.5
+      },
+      "thick": {
+       "label": "굵게",
+       "vars": {
+        "--lead-bar-w": ".6cqw"
+       },
+       "t": 1
+      }
+     },
+     "trait": "weight"
+    },
+    "barc": {
+     "label": "선 색",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "gray",
+     "options": {
+      "gray": {
+       "label": "회색",
+       "t": 0
+      },
+      "dark": {
+       "label": "검정",
+       "vars": {
+        "--lead-bar-c": "#1b1b1b"
+       },
+       "t": 1
+      },
+      "new": {
+       "label": "하늘색",
+       "vars": {
+        "--lead-bar-c": "var(--new)"
+       },
+       "t": 1
+      }
+     },
+     "trait": "contrast"
+    }
+   },
+   "selected": {
+    "size": 1.12,
+    "weight": "400"
+   },
+   "view": {
+    "zoom": 1.6,
+    "origin": "20% 22%"
+   },
+   "prominence": 0.95,
+   "reviewed": true
+  },
+  "narration": {
+   "name": "단계 설명",
+   "desc": "그림 옆에서 단계마다 바뀌는 설명 상자",
+   "props": {
+    "style": {
+     "label": "바탕",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "panel",
+     "options": {
+      "panel": {
+       "label": "회색 패널",
+       "t": 1
+      },
+      "outline": {
+       "label": "흰 바탕과 테두리",
+       "vars": {
+        "--narr-bg": "#fff",
+        "--narr-border": "1px solid #d6d6d6"
+       },
+       "t": 0.4
+      },
+      "line": {
+       "label": "왼쪽 선만",
+       "vars": {
+        "--narr-bg": "transparent",
+        "--narr-r": "0px"
+       },
+       "rule": ".narration{border-left:.3cqw solid #d6d6d6}",
+       "t": 0
+      }
+     },
+     "trait": "fill"
+    },
+    "stepname": {
+     "label": "단계 이름",
+     "axis": "모양",
+     "type": "choice",
+     "default": "bold",
+     "options": {
+      "bold": {
+       "label": "굵은 글자",
+       "t": 0
+      },
+      "badge": {
+       "label": "검정 배지",
+       "rule": ".narration .step-name{display:table;background:#1b1b1b;color:#fff;padding:.4cqh .8cqw;border-radius:4px}",
+       "t": 1
+      },
+      "underline": {
+       "label": "밑줄",
+       "rule": ".narration .step-name{display:table;border-bottom:.2cqw solid currentColor;padding-bottom:.4cqh}",
+       "t": 0.3
+      },
+      "large": {
+       "label": "큰 글자",
+       "rule": ".narration .step-name{font-size:1.3em}",
+       "t": 0.1
+      }
+     },
+     "trait": "badge"
+    },
+    "size": {
+     "label": "글자 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--narr-s",
+     "min": 0.8,
+     "max": 1.4,
+     "step": 0.12,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    },
+    "lh": {
+     "label": "줄 간격",
+     "axis": "간격",
+     "type": "num",
+     "var": "--narr-lh",
+     "min": 1.3,
+     "max": 2.1,
+     "step": 0.2,
+     "default": 1.6,
+     "unit": "",
+     "trait": "space"
+    },
+    "pad": {
+     "label": "안쪽 여백",
+     "axis": "간격",
+     "type": "num",
+     "var": "--narr-pad",
+     "min": 0.4,
+     "max": 2.0,
+     "step": 0.4,
+     "default": 1,
+     "unit": "x",
+     "trait": "space"
+    },
+    "radius": {
+     "label": "모서리",
+     "axis": "모양",
+     "type": "choice",
+     "default": "8",
+     "options": {
+      "0": {
+       "label": "각짐",
+       "vars": {
+        "--narr-r": "0px"
+       },
+       "t": 0
+      },
+      "8": {
+       "label": "둥글게",
+       "t": 0.5
+      },
+      "16": {
+       "label": "많이 둥글게",
+       "vars": {
+        "--narr-r": "16px"
+       },
+       "t": 1
+      }
+     },
+     "trait": "round"
+    }
+   },
+   "selected": {
+    "stepname": "badge"
+   },
+   "view": {
+    "zoom": 1.6,
+    "origin": "92% 55%"
+   },
+   "prominence": 0.85,
+   "reviewed": true
+  },
+  "callout": {
+   "name": "강조 상자",
+   "desc": "반드시 기억할 사실(crit)이나 처음 보는 결과(new)를 한두 문장으로",
+   "props": {
+    "style": {
+     "label": "모양",
+     "axis": "모양",
+     "type": "choice",
+     "default": "bar",
+     "options": {
+      "bar": {
+       "label": "왼쪽 굵은 선",
+       "t": 0.45
+      },
+      "tint": {
+       "label": "연한 색 바탕",
+       "rule": ".callout{background:color-mix(in srgb,var(--cc) 9%,#fff)}",
+       "t": 0.8
+      },
+      "outline": {
+       "label": "테두리",
+       "rule": ".callout{background:#fff;border:1px solid var(--cc);border-left-width:var(--callout-bar,.45cqw)}",
+       "t": 0.2
+      },
+      "solid": {
+       "label": "진한 색 바탕",
+       "rule": ".callout{background:var(--cc);color:#fff} .callout strong{color:#fff}",
+       "t": 1
+      }
+     },
+     "trait": "fill"
+    },
+    "size": {
+     "label": "글자 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--callout-s",
+     "min": 0.8,
+     "max": 1.4,
+     "step": 0.12,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    },
+    "bar": {
+     "label": "왼쪽 선 굵기",
+     "axis": "굵기",
+     "type": "num",
+     "var": "--callout-bar",
+     "min": 0.15,
+     "max": 0.9,
+     "step": 0.15,
+     "default": 0.45,
+     "unit": "cqw",
+     "trait": "weight"
+    },
+    "radius": {
+     "label": "모서리",
+     "axis": "모양",
+     "type": "choice",
+     "default": "6",
+     "options": {
+      "0": {
+       "label": "각짐",
+       "vars": {
+        "--callout-r": "0px"
+       },
+       "t": 0
+      },
+      "6": {
+       "label": "살짝 둥글게",
+       "t": 0.5
+      },
+      "14": {
+       "label": "둥글게",
+       "vars": {
+        "--callout-r": "14px"
+       },
+       "t": 1
+      }
+     },
+     "trait": "round"
+    }
+   },
+   "selected": {
+    "size": 1.24,
+    "radius": "0"
+   },
+   "view": {
+    "zoom": 1.45,
+    "origin": "25% 52%"
+   },
+   "prominence": 0.55,
+   "reviewed": true
+  },
+  "recap": {
+   "name": "요약 리캡",
+   "desc": "요약 장의 목적, 문제, 답 세 줄",
+   "props": {
+    "style": {
+     "label": "바탕",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "box",
+     "options": {
+      "box": {
+       "label": "회색 상자",
+       "t": 1
+      },
+      "outline": {
+       "label": "테두리",
+       "vars": {
+        "--recap-bg": "#fff",
+        "--recap-border": "1px solid #d6d6d6"
+       },
+       "t": 0.4
+      },
+      "line": {
+       "label": "왼쪽 선",
+       "vars": {
+        "--recap-bg": "transparent",
+        "--recap-r": "0px"
+       },
+       "rule": ".recap{border-left:.35cqw solid #d6d6d6}",
+       "t": 0
+      }
+     },
+     "trait": "fill"
+    },
+    "label": {
+     "label": "라벨 모양",
+     "axis": "모양",
+     "type": "choice",
+     "default": "bold",
+     "options": {
+      "bold": {
+       "label": "굵은 글자",
+       "t": 0
+      },
+      "badge": {
+       "label": "검정 배지",
+       "rule": ".recap strong{display:inline-block;min-width:3.4em;text-align:center;background:#1b1b1b;color:#fff;border-radius:4px;padding:0 .4em;font-size:.85em}",
+       "t": 1
+      },
+      "muted": {
+       "label": "회색 라벨",
+       "rule": ".recap strong{color:#6b6b6b;font-weight:600}",
+       "t": 0
+      },
+      "column": {
+       "label": "라벨 열 맞춤",
+       "rule": ".recap strong{display:inline-block;min-width:4.2em}",
+       "t": 0.2
+      }
+     },
+     "trait": "badge"
+    },
+    "size": {
+     "label": "글자 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--recap-s",
+     "min": 0.8,
+     "max": 1.4,
+     "step": 0.12,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    },
+    "lh": {
+     "label": "줄 간격",
+     "axis": "간격",
+     "type": "num",
+     "var": "--recap-lh",
+     "min": 1.3,
+     "max": 2.1,
+     "step": 0.15,
+     "default": 1.5,
+     "unit": "",
+     "trait": "space"
+    }
+   },
+   "selected": {
+    "label": "badge",
+    "size": 1.12
+   },
+   "view": {
+    "zoom": 1.6,
+    "origin": "20% 35%"
+   },
+   "prominence": 0.5,
+   "reviewed": true
+  },
+  "caption": {
+   "name": "캡션과 출처",
+   "desc": "그림 아래 캡션과 장 아래 출처",
+   "props": {
+    "csize": {
+     "label": "캡션 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--caption-s",
+     "min": 0.85,
+     "max": 1.3,
+     "step": 0.1,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    },
+    "ssize": {
+     "label": "출처 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--source-s",
+     "min": 0.85,
+     "max": 1.3,
+     "step": 0.1,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    },
+    "ccolor": {
+     "label": "캡션 색",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "muted",
+     "options": {
+      "muted": {
+       "label": "회색",
+       "t": 0
+      },
+      "fg": {
+       "label": "검정",
+       "vars": {
+        "--caption-c": "#1b1b1b"
+       },
+       "t": 1
+      }
+     },
+     "trait": "contrast"
+    },
+    "sstyle": {
+     "label": "출처 모양",
+     "axis": "모양",
+     "type": "choice",
+     "default": "plain",
+     "options": {
+      "plain": {
+       "label": "글자만"
+      },
+      "rule": {
+       "label": "위에 가는 선",
+       "rule": ".source{border-top:1px solid #d6d6d6;padding-top:1cqh}"
+      }
+     }
+    }
+   },
+   "selected": {
+    "csize": 0.85
+   },
+   "view": {
+    "zoom": 1.5,
+    "origin": "90% 75%"
+   },
+   "prominence": 0.4,
+   "reviewed": true
+  },
+  "table": {
+   "name": "표",
+   "desc": "수치를 비교하는 표",
+   "props": {
+    "lines": {
+     "label": "선",
+     "axis": "모양",
+     "type": "choice",
+     "default": "rows",
+     "options": {
+      "rows": {
+       "label": "가로선"
+      },
+      "grid": {
+       "label": "격자",
+       "rule": "th,td{border:1px solid #d6d6d6}"
+      },
+      "stripes": {
+       "label": "줄무늬",
+       "rule": "tr:nth-child(even) td{background:#f8f9fa} th,td{border-bottom:0} th{border-bottom:2px solid #1b1b1b}"
+      },
+      "minimal": {
+       "label": "머리 아래만",
+       "rule": "td{border-bottom:0} th{border-bottom:2px solid #1b1b1b}"
+      }
+     }
+    },
+    "head": {
+     "label": "머리 행",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "muted",
+     "options": {
+      "muted": {
+       "label": "회색 글자"
+      },
+      "bold": {
+       "label": "검정 굵게",
+       "vars": {
+        "--th-c": "#1b1b1b",
+        "--th-w": "700"
+       }
+      },
+      "filled": {
+       "label": "회색 바탕",
+       "vars": {
+        "--th-bg": "#f1f3f5",
+        "--th-c": "#1b1b1b"
+       }
+      }
+     }
+    },
+    "pad": {
+     "label": "행 높이",
+     "axis": "간격",
+     "type": "num",
+     "var": "--tbl-pad",
+     "min": 0.4,
+     "max": 2.0,
+     "step": 0.4,
+     "default": 1,
+     "unit": "x",
+     "trait": "space"
+    },
+    "size": {
+     "label": "글자 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--tbl-s",
+     "min": 0.8,
+     "max": 1.4,
+     "step": 0.12,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    },
+    "hl": {
+     "label": "강조 행",
+     "axis": "모양",
+     "type": "choice",
+     "default": "bold",
+     "options": {
+      "bold": {
+       "label": "굵은 글자"
+      },
+      "tint": {
+       "label": "연한 하늘색 바탕",
+       "rule": "tr.hl td{background:#e0f2fe}"
+      },
+      "bar": {
+       "label": "왼쪽 막대",
+       "rule": "tr.hl td:first-child{box-shadow:inset .35cqw 0 0 #0284c7}"
+      }
+     }
+    }
+   },
+   "selected": {
+    "pad": 1.8,
+    "size": 0.8
+   },
+   "view": {
+    "zoom": 1.45,
+    "origin": "30% 55%"
+   },
+   "prominence": 0.7,
+   "reviewed": true
+  },
+  "bullets": {
+   "name": "불릿",
+   "desc": "라벨로 시작하는 짧은 구의 목록",
+   "props": {
+    "marker": {
+     "label": "표식",
+     "axis": "모양",
+     "type": "choice",
+     "default": "disc",
+     "options": {
+      "disc": {
+       "label": "점"
+      },
+      "dash": {
+       "label": "짧은 선",
+       "rule": "ul.points{list-style:none} ul.points li{position:relative} ul.points li::before{content:\"–\";position:absolute;left:-1em;color:var(--bullet-c,#6b6b6b)}"
+      },
+      "square": {
+       "label": "네모",
+       "rule": "ul.points{list-style-type:square}"
+      },
+      "none": {
+       "label": "없음",
+       "rule": "ul.points{list-style:none;padding-left:0}"
+      }
+     }
+    },
+    "mcolor": {
+     "label": "표식 색",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "muted",
+     "options": {
+      "muted": {
+       "label": "회색",
+       "t": 0
+      },
+      "fg": {
+       "label": "검정",
+       "vars": {
+        "--bullet-c": "#1b1b1b"
+       },
+       "t": 1
+      },
+      "new": {
+       "label": "하늘색",
+       "vars": {
+        "--bullet-c": "var(--new)"
+       },
+       "t": 1
+      }
+     },
+     "trait": "contrast"
+    },
+    "gap": {
+     "label": "항목 간격",
+     "axis": "간격",
+     "type": "num",
+     "var": "--li-gap",
+     "min": 0.3,
+     "max": 2.7,
+     "step": 0.6,
+     "default": 1,
+     "unit": "x",
+     "trait": "space"
+    },
+    "label": {
+     "label": "라벨",
+     "axis": "모양",
+     "type": "choice",
+     "default": "bold",
+     "options": {
+      "bold": {
+       "label": "굵은 글자"
+      },
+      "block": {
+       "label": "라벨 한 줄, 내용 다음 줄",
+       "rule": "ul.points li strong{display:block}"
+      },
+      "muted": {
+       "label": "회색 라벨",
+       "rule": "ul.points li strong{color:#6b6b6b;font-weight:600}"
+      }
+     }
+    },
+    "size": {
+     "label": "글자 크기",
+     "axis": "글자",
+     "type": "num",
+     "var": "--body-s",
+     "min": 0.8,
+     "max": 1.4,
+     "step": 0.12,
+     "default": 1,
+     "unit": "x",
+     "trait": "size"
+    }
+   },
+   "selected": {
+    "gap": 1.6
+   },
+   "view": {
+    "zoom": 1.6,
+    "origin": "15% 52%"
+   },
+   "prominence": 0.65,
+   "reviewed": true
+  },
+  "option": {
+   "name": "선택지 패널",
+   "desc": "결정의 선택지를 나란히 그리는 패널",
+   "props": {
+    "style": {
+     "label": "바탕",
+     "axis": "색·바탕",
+     "type": "choice",
+     "default": "panel",
+     "options": {
+      "panel": {
+       "label": "회색 패널",
+       "t": 0.8
+      },
+      "outline": {
+       "label": "흰 바탕과 테두리",
+       "vars": {
+        "--opt-bg": "#fff",
+        "--opt-border": "1px solid #d6d6d6"
+       },
+       "t": 0.3
+      },
+      "tint": {
+       "label": "선택지 색 연하게",
+       "rule": ".option.c1{background:color-mix(in srgb,var(--c1) 7%,#fff)} .option.c2{background:color-mix(in srgb,var(--c2) 7%,#fff)} .option.c3{background:color-mix(in srgb,var(--c3) 7%,#fff)} .option.c4{background:color-mix(in srgb,var(--c4) 7%,#fff)}",
+       "t": 1
+      }
+     },
+     "trait": "fill"
+    },
+    "title": {
+     "label": "선택지 이름",
+     "axis": "모양",
+     "type": "choice",
+     "default": "color",
+     "options": {
+      "color": {
+       "label": "색 글자",
+       "t": 0
+      },
+      "badge": {
+       "label": "색 배지",
+       "rule": ".option h3{align-self:flex-start;color:#fff!important;padding:.4cqh .9cqw;border-radius:4px;background:#475569} .option.c1 h3{background:var(--c1)} .option.c2 h3{background:var(--c2)} .option.c3 h3{background:var(--c3)} .option.c4 h3{background:var(--c4)}",
+       "t": 1
+      },
+      "band": {
+       "label": "위쪽 색 띠",
+       "rule": ".option{border-top:.6cqh solid #d6d6d6} .option.c1{border-top-color:var(--c1)} .option.c2{border-top-color:var(--c2)} .option.c3{border-top-color:var(--c3)} .option.c4{border-top-color:var(--c4)}",
+       "t": 0.4
+      }
+     },
+     "trait": "badge"
+    },
+    "radius": {
+     "label": "모서리",
+     "axis": "모양",
+     "type": "choice",
+     "default": "8",
+     "options": {
+      "0": {
+       "label": "각짐",
+       "vars": {
+        "--opt-r": "0px"
+       },
+       "t": 0
+      },
+      "8": {
+       "label": "둥글게",
+       "t": 0.5
+      },
+      "16": {
+       "label": "많이 둥글게",
+       "vars": {
+        "--opt-r": "16px"
+       },
+       "t": 1
+      }
+     },
+     "trait": "round"
+    },
+    "pad": {
+     "label": "안쪽 여백",
+     "axis": "간격",
+     "type": "num",
+     "var": "--opt-pad",
+     "min": 0.6,
+     "max": 1.6,
+     "step": 0.2,
+     "default": 1,
+     "unit": "x"
+    }
+   },
+   "selected": {
+    "title": "badge"
+   },
+   "view": {
+    "zoom": 1.3,
+    "origin": "50% 62%"
+   },
+   "prominence": 0.45,
+   "reviewed": true
+  }
+ },
+ "traits": {
+  "round": {
+   "label": "둥글기",
+   "desc": "상자, 패널, 막대, 꺾인 선의 모서리가 둥근 정도",
+   "lo": "각짐",
+   "hi": "둥글게"
+  },
+  "weight": {
+   "label": "선 굵기",
+   "desc": "테두리, 화살표, 그래프 선, 강조 선의 굵기",
+   "lo": "가늘게",
+   "hi": "굵게"
+  },
+  "size": {
+   "label": "글자 크기",
+   "desc": "제목, 메시지, 본문, 그래프, 캡션의 글자 크기",
+   "lo": "작게",
+   "hi": "크게"
+  },
+  "bold": {
+   "label": "글자 굵기",
+   "desc": "이름, 제목, 메시지, 연산 기호의 굵기",
+   "lo": "가볍게",
+   "hi": "굵게"
+  },
+  "fill": {
+   "label": "바탕 채움",
+   "desc": "패널과 상자를 회색 바탕으로 채우는 정도(채움 ↔ 선만)",
+   "lo": "선만",
+   "hi": "채움"
+  },
+  "space": {
+   "label": "여백",
+   "desc": "패널 안쪽 여백, 줄 간격, 항목 간격",
+   "lo": "촘촘하게",
+   "hi": "넉넉하게"
+  },
+  "contrast": {
+   "label": "대비",
+   "desc": "테두리와 표식 색이 진한 정도, 강조 밖 부분이 흐린 정도",
+   "lo": "부드럽게",
+   "hi": "진하게"
+  },
+  "badge": {
+   "label": "배지 표시",
+   "desc": "머리표, 단계 이름, 리캡 라벨, 선택지 이름을 배지로 표시하는 정도",
+   "lo": "글자",
+   "hi": "배지"
+  }
+ }
+}

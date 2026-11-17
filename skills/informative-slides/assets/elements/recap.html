@@ -1,0 +1,16 @@
+<!-- 요소: 요약 리캡 (recap) · 묶음: 텍스트 상자
+     요약 장의 목적, 문제, 답 세 줄
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. -->
+<section class="slide" data-layout="summary">
+  <div class="eyebrow">요약</div>
+  <h2 class="title">주문 API 후처리 비동기화 설계 검토 요약</h2>
+  <p class="recap"><strong>목적</strong>후처리를 주문 응답에서 떼어 낼 방식 결정<br><strong>문제</strong>주문 API 서버 오류의 71%: 후처리 타임아웃<br><strong>답</strong>이벤트 기록 테이블 경유 발행(B안)</p>
+  <ul class="points">
+    <li><strong>1.</strong> 주문 실패 원인</li>
+    <li><strong>2.</strong> 대안 3개의 응답 시간과 유실</li>
+    <li><strong>3.</strong> B안의 작업량</li>
+  </ul>
+  <div class="source">출처: 설명용 예시</div>
+</section>

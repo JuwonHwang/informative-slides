@@ -1,0 +1,34 @@
+<!-- 요소: 선택지 패널 (option) · 묶음: 표와 목록
+     결정의 선택지를 나란히 그리는 패널
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. 그림 원본: diagram-goal-a, diagram-goal-b. 덱에 같은 id가 있으면 이름을 바꾼다. -->
+<template id="diagram-goal-a">
+  <svg viewBox="0 0 600 300" role="img" aria-label="option A">
+    <g data-part="file"><rect class="box data" x="20" y="20" width="560" height="260" rx="0"/>
+      <text class="name" x="40" y="60" font-size="24">GOAL.md</text>
+      <text class="sub" x="40" y="220" font-size="20">이전 문장(seed 3개)은 지운다</text></g>
+    <g data-part="goal" class="c1"><rect class="box data" x="40" y="90" width="520" height="70" rx="0"/>
+      <text class="name" x="60" y="134" font-size="22">달성 기준: seed 5개 평균</text></g>
+  </svg>
+</template>
+<template id="diagram-goal-b">
+  <svg viewBox="0 0 600 300" role="img" aria-label="option B">
+    <g data-part="file"><rect class="box data" x="20" y="20" width="560" height="260" rx="0"/>
+      <text class="name" x="40" y="60" font-size="24">GOAL.md</text></g>
+    <g data-part="goal"><rect class="box data" x="40" y="90" width="520" height="70" rx="0"/>
+      <text x="60" y="134" font-size="22">달성 기준: seed 5개 평균</text></g>
+    <g data-part="hist" class="c2 prop"><rect class="box data" x="40" y="180" width="520" height="80" rx="0"/>
+      <text class="name" x="60" y="228" font-size="22">변경 이력 절 (새로 생김)</text></g>
+  </svg>
+</template>
+<section class="slide">
+  <div class="eyebrow">결정 1a/2</div>
+  <h2 class="title">GOAL.md 달성 기준을 바꿀 때의 수정 방식 선택지 (2개)</h2>
+  <p class="lead">두 방식 모두 새 달성 기준을 쓰고, 이전 기준을 남기는지만 다르다.</p>
+  <div class="options">
+    <div class="option c1"><h3>A. 문장 교체</h3><div class="figure" data-diagram="goal-a"></div><p>달성 기준 문장만 바꾼다</p></div>
+    <div class="option c2"><h3>B. 변경 이력 절 추가</h3><div class="figure" data-diagram="goal-b"></div><p>이전 기준과 날짜를 쓰는 절을 둔다</p></div>
+  </div>
+  <div class="source">출처: skills/meet/SKILL.md. 점선: 아직 없는 부분</div>
+</section>

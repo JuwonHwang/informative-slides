@@ -1,0 +1,36 @@
+<!-- 요소: 처리 상자 (box) · 묶음: 그림 부품
+     모델, 층, 서비스처럼 처리하는 구성 요소의 둥근 상자
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. 그림 원본: diagram-sp-box. 덱에 같은 id가 있으면 이름을 바꾼다. -->
+<template id="diagram-sp-box">
+  <svg viewBox="0 0 1500 460" role="img" aria-label="boxes">
+    <g data-part="in"><rect class="box data" x="20" y="170" width="220" height="110" rx="0"/>
+      <text class="name" x="130" y="215" text-anchor="middle" font-size="26">질문 문장</text>
+      <text class="sub" x="130" y="252" text-anchor="middle" font-size="21">토큰 12개</text></g>
+    <path class="edge main" data-part="in a" d="M240,225 L326,225"/>
+    <g data-part="a"><rect class="box" x="330" y="150" width="260" height="150" rx="10"/>
+      <text class="name" x="460" y="212" text-anchor="middle" font-size="28">검색기</text>
+      <text class="sub" x="460" y="252" text-anchor="middle" font-size="21">후보 100개 찾기</text></g>
+    <path class="edge main" data-part="a b" d="M590,225 L676,225"/>
+    <g data-part="b" class="c1"><rect class="box" x="680" y="150" width="260" height="150" rx="10"/>
+      <text class="name" x="810" y="212" text-anchor="middle" font-size="28">리랭커</text>
+      <text class="sub" x="810" y="252" text-anchor="middle" font-size="21">관련도 점수</text></g>
+    <path class="edge main" data-part="b c" d="M940,225 L1026,225"/>
+    <g data-part="c" class="new"><rect class="box" x="1030" y="150" width="260" height="150" rx="10"/>
+      <text class="name" x="1160" y="212" text-anchor="middle" font-size="28">답변 모델</text>
+      <text class="sub" x="1160" y="252" text-anchor="middle" font-size="21">상위 5개 읽기</text></g>
+    <path class="edge opt" data-part="c d" d="M1160,300 L1160,384"/>
+    <g data-part="d" class="crit"><rect class="box" x="1040" y="388" width="240" height="64" rx="10"/>
+      <text class="name" x="1160" y="430" text-anchor="middle" font-size="22">답 없음 처리</text></g>
+    <text class="label" x="1176" y="350" font-size="20">근거 0개</text>
+    <text class="label" x="300" y="80" font-size="22">처리 상자: 검색기(기본), 리랭커(c1), 답변 모델(new), 답 없음 처리(crit)</text>
+  </svg>
+</template>
+<section class="slide">
+  <div class="eyebrow">머리표</div>
+  <h2 class="title">위키 검색 답변 파이프라인의 처리 상자 (설명용 예시)</h2>
+  <p class="lead">처리 상자는 학습하거나 상태를 가진 처리이고, 종류마다 색을 칠한다.</p>
+  <div class="figure" data-diagram="sp-box"></div>
+  <div class="source">출처: 설명용 예시</div>
+</section>

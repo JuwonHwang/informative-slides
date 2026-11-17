@@ -1,0 +1,15 @@
+<!-- 요소: 그래프 공통 (chart) · 묶음: 그래프
+     막대, 선, 점 그래프가 함께 쓰는 격자, 축, 글자, 계열 이름
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. -->
+<section class="slide">
+  <div class="eyebrow">머리표</div>
+  <h2 class="title">검색 방식별 답변 정답률과 학습 손실 (설명용 예시)</h2>
+  <p class="lead">막대와 선 그래프는 격자, 축, 글자 크기, 계열 이름을 함께 쓴다.</p>
+  <div class="pair">
+    <div class="chart" data-chart='{"type":"bar","categories":["키워드","벡터","혼합"],"series":[{"name":"리랭커 없음","values":[52,61,64],"color":"c4"},{"name":"리랭커","values":[58,70,74],"color":"new"}],"y":{"label":"정답률","unit":"%","min":0,"max":100}}'></div>
+    <div class="chart" data-chart='{"type":"line","x":[1,2,3,4,5,6,7,8],"series":[{"name":"학습","values":[2.1,1.6,1.3,1.1,0.95,0.86,0.8,0.76],"color":"c1"},{"name":"검증","values":[2.2,1.75,1.5,1.36,1.3,1.28,1.29,1.31],"color":"crit"}],"x_label":"epoch","y":{"label":"손실","min":0}}'></div>
+  </div>
+  <div class="source">출처: 설명용 예시</div>
+</section>

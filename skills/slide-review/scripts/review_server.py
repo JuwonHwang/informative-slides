@@ -235,7 +235,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             params["w"] = width_q
         with tempfile.TemporaryDirectory() as tmp:
             out = pathlib.Path(tmp) / "deck.pdf"
-            subprocess.run([chrome, "--headless=new", "--disable-gpu", f"--user-data-dir={tmp}/p",
+            subprocess.run([chrome, "--headless=new", "--disable-gpu", "--use-mock-keychain", "--password-store=basic", f"--user-data-dir={tmp}/p",
                              "--no-pdf-header-footer", "--virtual-time-budget=10000",
                             f"--print-to-pdf={out}",
                             f"http://127.0.0.1:{PORT}/__render/" + urllib.parse.quote(rel.lstrip("/")) + "?" + urllib.parse.urlencode(params)],

@@ -3,17 +3,18 @@
 
 Usage: python3 check_deck.py <deck.html> [--no-browser]
 
-Per slide (<section class="slide">), on the Korean text:
+Per slide (<section class="slide">):
   - title exists, is a noun phrase (not a -다/-요/-니다 sentence), is not a generic label
   - every non-cover slide has a lead, and the lead is one sentence
   - word budget (어절) excluding the source line
   - numbers come with a .source line
   - every abbreviation / metric code / model name on the slide has its plain name on that slide
 Per deck:
-  - cover first, summary second, closing last; the summary has a .recap
-  - lang="ko" and lang="en" elements pair up
+  - the summary slide (if any) has a .recap; cover and closing slides have the project name
+  - the deck is written in one language: no lang="..." on text elements
+  - no inline style on slide elements (design values come from assets/design/catalog.json)
   - every data-diagram has a <template id="diagram-..."> definition
-  - method slides (data-layout="method"): one narration per figure step, 3 sentences / 45 words per step
+  - method and overview slides (data-layout="method" / "overview"): one narration per figure step, 3 sentences / 45 words per step
   - figure text: every symbol (Q, Kᵀ, S₁₁) appears once with its plain name in the same figure
   - prints the titles in order so the storyline can be read on its own
   - with Chrome/Chromium/Edge installed, renders ?check at every step and reports slides that overflow,
@@ -140,11 +141,11 @@ def browser_overflow(path):
     if not chrome:
         return None, "no Chrome/Chromium/Edge found; open the deck with ?check in a browser instead"
     res = []
-    for lang in ("ko", "en"):
-        url = pathlib.Path(path).resolve().as_uri() + f"?check&lang={lang}"
+    for lang in ("",):
+        url = pathlib.Path(path).resolve().as_uri() + "?check"
         with tempfile.TemporaryDirectory() as prof:
             try:
-                out = subprocess.run([chrome, "--headless=new", "--disable-gpu", f"--user-data-dir={prof}",
+                out = subprocess.run([chrome, "--headless=new", "--disable-gpu", "--use-mock-keychain", "--password-store=basic", f"--user-data-dir={prof}",
                                       "--window-size=1600,900", "--virtual-time-budget=8000", "--dump-dom", url],
                                      capture_output=True, text=True, timeout=90).stdout
             except (subprocess.TimeoutExpired, OSError) as e:
@@ -159,7 +160,7 @@ def browser_overflow(path):
             import html as _html
             names = {"text-out": "diagram: text outside its box", "text-overlap": "diagram: texts overlap",
                      "label-on-box": "diagram: label overlaps another box",
-                     "edge-cross": "diagram: arrow crosses a box it does not connect", "out-of-figure": "diagram: element outside the figure",
+                     "edge-cross": "diagram: arrow crosses a box it does not connect", "text-on-edge": "diagram: label covered by an arrow line or head; move the label off the arrow", "out-of-figure": "diagram: element outside the figure",
                      "small-text": "diagram: text smaller than 1.0% of the slide width (shown size first); enlarge the font, shorten the text or split the figure",
                      "wrap": "line breaks where there is no <br>; break it at a meaning boundary yourself, shorten it, or split the slide"}
             for item in _html.unescape(d.group(1)).split(";"):
@@ -185,7 +186,7 @@ def main():
     issues, titles, leads_in_order = [], [], []
 
     for i, s in enumerate(slides, 1):
-        layout = s.attrs.get("data-layout") or ("cover" if "cover" in s.cls else "")
+        layout = s.attrs.get("data-layout") or ("cover" if "cover" in s.cls else "divider" if "divider" in s.cls else "")
         t_el = next((n for n in walk(s) if "title" in n.cls), None)
         title = one_line(text(t_el)) if t_el else ""
         titles.append((i, layout, title))
@@ -204,7 +205,7 @@ def main():
             if units > lim_u and "\n" not in text(t_el):
                 issues.append(("WARN", i, f"title is {units:.0f} width units (Hangul 1, other 0.55; limit {lim_u}); move detail to the subtitle or break with <br>"))
 
-        if layout != "cover":
+        if layout not in ("cover", "divider"):
             leads = [n for n in walk(s) if "lead" in n.cls]
             if layout != "summary" and len(leads) != 1:
                 issues.append(("ERROR", i, f"{len(leads)} .lead elements; a slide has exactly one message sentence"))
@@ -226,7 +227,7 @@ def main():
         is_src = lambda n: "source" in n.cls
         # 방법 설명 장: 단계 설명(.narration)은 분량을 따로 센다(원칙 8)
         is_narr = lambda n: "narration" in n.cls
-        if layout == "method":
+        if layout in ("method", "overview", "concept", "problem"):
             figs = [n for n in walk(s) if "data-steps" in n.attrs]
             narr = [n for n in walk(s) if "data-only" in n.attrs]
             if not figs:
@@ -248,11 +249,11 @@ def main():
         body = text(s, lambda n: is_src(n) or is_narr(n))
         words = len(body.split())
         lim = WORDS.get(layout, WORDS["default"])
-        if words > lim and layout != "cover":
+        if words > lim and layout not in ("cover", "divider"):
             issues.append(("WARN", i, f"{words} words (limit {lim}); split the slide"))
         has_source = any(is_src(n) and text(n) for n in walk(s))
         body_wo = text(s, lambda n: is_src(n) or "title" in n.cls or "eyebrow" in n.cls or n.tag == "svg")
-        if layout not in ("cover", "closing") and re.search(r"\d", body_wo) and not has_source:
+        if layout not in ("cover", "closing", "divider") and re.search(r"\d", body_wo) and not has_source:
             issues.append(("WARN", i, "numbers on the slide but no .source"))
 
         full = one_line(text(s))
@@ -286,16 +287,12 @@ def main():
             issues.append(("INFO", i, f"placeholder to fill: {ph}"))
 
     layouts = [t[1] for t in titles]
-    if layouts[0] != "cover":
-        issues.append(("WARN", 1, 'first slide is not the cover (class="slide cover")'))
-    if len(slides) > 3 and (len(layouts) < 2 or layouts[1] != "project"):
-        issues.append(("WARN", 2, 'slide 2 is not data-layout="project"; introduce the project before the summary'))
-    if len(slides) > 3 and "summary" not in layouts[1:4]:
-        issues.append(("WARN", 3, 'no data-layout="summary" slide after the project introduction'))
-    if "project" in layouts and "summary" in layouts and layouts.index("summary") < layouts.index("project"):
-        issues.append(("WARN", layouts.index("summary") + 1, "summary comes before the project introduction"))
-    if layouts[-1] != "closing":
-        issues.append(("WARN", len(slides), 'last slide is not data-layout="closing"'))
+    # 장의 순서와 구성은 문서(rules/document.md)가 정한다. 여기서는 순서를 검사하지 않는다
+    # 디자인 값(rules/slides.md 5절)은 장에 쓰지 않는다. 생김새는 디자인 카탈로그가 템플릿 CSS에 넣는다
+    for i, s_ in enumerate(slides, 1):
+        styled = [n for n in walk(s_) if "style" in n.attrs and n.tag in ("section", "div", "ul", "p", "table", "h2")]
+        if "style" in s_.attrs or styled:
+            issues.append(("WARN", i, "inline style on the slide; design values come from the design catalog (assets/design/catalog.json), not the slide"))
 
     if not re.search(r'<html[^>]*style="[^"]*--project:\s*#[0-9a-fA-F]{6}', src):
         issues.append(("WARN", 0, '<html> has no style="--project:#RRGGBB"; run scripts/project_identity.py and set the project color'))
@@ -307,10 +304,10 @@ def main():
     if not re.search(r'<html[^>]*data-ratio="\d+(?:\.\d+)?:\d+(?:\.\d+)?"', src):
         issues.append(("WARN", 0, '<html> has no data-ratio="W:H"; the template sets the slide and PDF page ratio from it'))
     body_html = src[src.find("<body"):]
-    ko = len(re.findall(r'\blang="ko"', body_html))
-    en = len(re.findall(r'\blang="en"', body_html))
-    if ko != en:
-        issues.append(("ERROR", 0, f'lang="ko" ({ko}) and lang="en" ({en}) counts differ; every text needs both'))
+    # 덱은 언어 하나로 쓴다(rules/slides.md 8절). 글자에 lang 속성을 붙이면 언어를 섞은 것이다
+    n_lang = len(re.findall(r'<(?:span|text|p|div|li|td|th)\b[^>]*\blang="', body_html))
+    if n_lang:
+        issues.append(("WARN", 0, f'{n_lang} text elements carry lang="..."; write the deck in one language without per-element lang'))
     used = set(re.findall(r'data-(?:diagram|detail)="([^"]+)"', src))
     defined = set(re.findall(r'<template id="diagram-([^"]+)"', src))
     for d in sorted(used - defined):
@@ -347,7 +344,7 @@ def main():
         if over is None:
             issues.append(("INFO", 0, note))
         for i, lang, msg in over or []:
-            issues.append(("ERROR", i, f"{msg} ({lang})"))
+            issues.append(("ERROR", i, f"{msg} ({lang})" if lang else msg))
 
     print(f"Deck: {path}  ({len(slides)} slides)\n")
     print("Titles in order (read these alone: they should state the whole argument):")

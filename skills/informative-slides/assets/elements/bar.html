@@ -1,0 +1,12 @@
+<!-- 요소: 막대 그래프 (bar) · 묶음: 그래프
+     범주마다 값을 막대로 비교한다
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. -->
+<section class="slide">
+  <div class="eyebrow">머리표</div>
+  <h2 class="title">후처리 5개의 대기 시간 (느린 1% 요청, 설명용 예시)</h2>
+  <p class="lead">알림 발송의 대기 시간이 비동기 전환 전후 모두 가장 길다.</p>
+  <div class="chart" data-chart='{"type":"bar","categories":["재고 차감","포인트","알림 발송","정산 기록","로그"],"series":[{"name":"동기 호출","values":[180,240,1450,620,90],"color":"c4"},{"name":"비동기 전환 후","values":[160,200,310,280,80],"color":"new"}],"y":{"label":"대기 시간","unit":"ms","min":0},"highlight":[2]}'></div>
+  <div class="source">출처: 설명용 예시</div>
+</section>

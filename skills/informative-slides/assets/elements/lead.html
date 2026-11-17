@@ -1,0 +1,16 @@
+<!-- 요소: 메시지 (lead) · 묶음: 텍스트 상자
+     장마다 한 문장으로 쓰는 메시지
+     쓰는 법: <template>이 있으면 덱의 <main class="deck"> 앞에 두고, <section>은 장 자리에 넣은 뒤 내용을 문서의 것으로 바꾼다.
+     생김새(선 굵기, 모서리, 색, 글자 크기)는 템플릿 CSS가 정하므로 클래스만 쓰고 style 값을 쓰지 않는다. 규칙은 rules/slides.md 5절과 9절이다.
+     예시의 수치와 이름은 설명용이므로 옮겨 오지 않는다. -->
+<section class="slide">
+  <div class="eyebrow">주문 실패 원인</div>
+  <h2 class="title">주문 API 서버 오류 원인 구성 (최근 90일, 4,812건)</h2>
+  <p class="lead">주문 API 서버 오류의 71%가 후처리 타임아웃이고,<br>그중 알림 발송이 가장 많다.</p>
+  <ul class="points">
+    <li><strong>후처리 타임아웃:</strong> 3,417건 (71%)</li>
+    <li><strong>결제 승인 실패:</strong> 902건 (19%)</li>
+    <li><strong>기타:</strong> 493건 (10%)</li>
+  </ul>
+  <div class="source">출처: 설명용 예시</div>
+</section>
