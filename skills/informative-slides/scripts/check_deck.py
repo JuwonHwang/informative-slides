@@ -160,7 +160,7 @@ def browser_overflow(path):
             import html as _html
             names = {"text-out": "diagram: text outside its box", "text-overlap": "diagram: texts overlap",
                      "label-on-box": "diagram: label overlaps another box",
-                     "edge-cross": "diagram: arrow crosses a box it does not connect", "text-on-edge": "diagram: label covered by an arrow line or head; move the label off the arrow", "out-of-figure": "diagram: element outside the figure",
+                     "edge-cross": "diagram: arrow crosses a box it does not connect", "text-on-edge": "diagram: label covered by an arrow line or head; move the label off the arrow", "short-edge": "diagram: arrow shorter than twice its head, so only the head shows; lengthen the arrow or move the boxes apart", "out-of-figure": "diagram: element outside the figure",
                      "small-text": "diagram: text smaller than 1.0% of the slide width (shown size first); enlarge the font, shorten the text or split the figure",
                      "wrap": "line breaks where there is no <br>; break it at a meaning boundary yourself, shorten it, or split the slide"}
             for item in _html.unescape(d.group(1)).split(";"):

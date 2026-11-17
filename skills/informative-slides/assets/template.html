@@ -155,8 +155,11 @@ svg g.prop .box{stroke-dasharray:calc(var(--su,1) * 8) calc(var(--su,1) * 6)}
 @media print{
   html,body{height:auto}
   .deck{position:static;display:block}
-  /* container-type:size가 있으면 Firefox가 인쇄할 때 SVG 글자를 그리지 않는다. 인쇄에서는 끄고, 장 크기 단위(cqw)는 쪽 크기 기준으로 계산된다 */
-  .slide{display:flex!important;width:var(--pw,1600px);height:var(--ph,900px);break-after:page;container-type:normal}
+  /* 인쇄에서도 장을 크기 기준 컨테이너로 둔다. 그래야 장 크기 단위(cqw, cqh)가 화면과 같이 장의 여백 안쪽을 기준으로 잡혀,
+     글자와 그림이 화면과 같은 비율로 인쇄된다. 끄면 쪽 전체 폭이 기준이 되어 글자가 약 11% 커지고 줄이 넘어간다.
+     Firefox는 컨테이너가 있으면 인쇄할 때 SVG 글자를 그리지 않으므로 Firefox에서만 끈다 */
+  .slide{display:flex!important;width:var(--pw,1600px);height:var(--ph,900px);break-after:page;container-type:size}
+  @supports (-moz-appearance:none){.slide{container-type:normal}}
   .counter,.check-banner,.toc{display:none!important}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;transition:none!important}
 }
@@ -748,7 +751,7 @@ if (new URLSearchParams(location.search).get('steps') === 'pages') expandSteps()
 // 확인 모드: 주소에 ?check가 있으면 장마다 재고 결과를 body에 남긴다 (check_deck.py가 읽는다)
 //   data-overflow: 내용이 장을 넘친 장 번호
 //   data-diagram:  구조도 문제 "장|종류|내용" 목록(;로 구분). 종류: text-out(글자가 상자 밖), text-overlap(글자끼리 겹침),
-//                  label-on-box(라벨이 다른 상자와 겹침), edge-cross(화살표가 연결 대상이 아닌 상자를 가로지름), text-on-edge(라벨이 화살표 선이나 머리에 덮임), out-of-figure(그림 밖),
+//                  label-on-box(라벨이 다른 상자와 겹침), edge-cross(화살표가 연결 대상이 아닌 상자를 가로지름), text-on-edge(라벨이 화살표 선이나 머리에 덮임), short-edge(화살표 길이가 머리 길이의 2배보다 짧음), out-of-figure(그림 밖),
 //                  wrap(<br> 없이 줄이 바뀐 글),
 //                  small-text(화면에 그려진 글자 크기가 장 너비의 1.0% 미만. 위치 표시 그림 .locator와 확대 그림의 .whole은 제외)
 function diagramIssues(s, k) {
@@ -823,6 +826,17 @@ function diagramIssues(s, k) {
       }
     })
     covered.forEach(t => out.push([k, 'text-on-edge', txt(t)]))
+    // 짧은 화살표: 머리 앞에 머리 길이만큼의 선이 보이지 않는 화살표. 머리만 보이면 어디서 오는 화살표인지 읽히지 않는다
+    svg.querySelectorAll('.edge').forEach(e => {
+      if (e.closest('.locator, .whole') || !e.getTotalLength) return
+      const cs = getComputedStyle(e), m = e.getScreenCTM()
+      if (!m || cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) < 0.05) return
+      const sc = Math.hypot(m.a, m.b), w = parseFloat((cs.strokeWidth.match(/[0-9.]+/) || ['1'])[0]) * sc
+      const mk = document.getElementById(((cs.markerEnd || '').match(/#([\w-]+)/) || [])[1] || '')
+      const head = mk ? parseFloat(mk.getAttribute('markerWidth')) * w : 0
+      const len = e.getTotalLength() * sc
+      if (head && len < head * 2 - 0.5) out.push([k, 'short-edge', (e.dataset.part || 'edge') + ' ' + Math.round(len) + 'px, head ' + Math.round(head) + 'px'])
+    })
     // 그림 밖
     ;[...texts, ...boxes.map(b => b.rect)].forEach(el => {
       const r = el.getBoundingClientRect()

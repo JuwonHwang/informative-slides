@@ -208,7 +208,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         if f.suffix in (".html", ".htm"):
             html = body.decode("utf-8")
             # 인쇄 보정: container-type:size가 있으면 Firefox가 인쇄할 때 SVG 글자를 그리지 않는다. 이전 템플릿으로 만든 덱에도 적용한다.
-            tag = f'<style id="review-fonts">{FONT_CSS}@media print{{.slide{{container-type:normal!important}}}}</style>'
+            # Firefox에서만 끈다. 다른 브라우저(검수 화면의 PDF를 만드는 Chrome 포함)에서 끄면 장 크기 단위가 쪽 전체 폭 기준이 되어 글자가 약 11% 커진다
+            tag = f'<style id="review-fonts">{FONT_CSS}@media print{{@supports (-moz-appearance:none){{.slide{{container-type:normal!important}}}}}}</style>'
             html = re.sub(r"(<head[^>]*>)", lambda m: m.group(1) + tag, html, count=1) if "<head" in html else tag + html
             body, ctype = html.encode("utf-8"), "text/html; charset=utf-8"
         else:
