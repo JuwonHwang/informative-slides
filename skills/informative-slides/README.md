@@ -28,7 +28,7 @@
 `<html data-ratio="16:9">`에서 정한다. 표지에는 소속(로고), 프로젝트 이름과 한 줄 설명, 프로젝트의 어느 부분을 다루는지
 밝힌 제목을 두고, 프로젝트 이름은 프로젝트 색으로 쓴다. 발표자·소속·팀·로고는
 `~/.config/informative-slides/profile.json`에 처음 한 번만 저장해 모든 프로젝트에서 쓰고, 프로젝트 이름·한 줄 설명·색은
-프로젝트 폴더의 `slides/identity.json`에 저장해 같은 프로젝트의 덱이 모두 같게 한다. 슬라이드 규칙은
+프로젝트 루트(git 저장소 최상위 폴더, 저장소가 아니면 작업 폴더)의 `.informative-slides/identity.json`에 저장해 같은 프로젝트의 덱이 모두 같게 한다. 덱과 중간 파일도 모두 `.informative-slides/`에 두고, 이 폴더는 안의 `.gitignore`로 git 추적에서 뺀다. 슬라이드 규칙은
 [drive-project-forward](https://github.com/JuwonHwang/drive-project-forward)의 `slides/RULES.md`를 기반으로 한다.
 
 ## 구성

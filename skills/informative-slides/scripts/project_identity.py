@@ -2,7 +2,7 @@
 """Read or create the slide identity used on the cover and closing slides.
 
 Usage:
-  python3 project_identity.py <project dir> [--name NAME] [--summary "한 줄 설명"] [--color "#RRGGBB"]
+  python3 project_identity.py [<project dir>] [--name NAME] [--summary "한 줄 설명"] [--color "#RRGGBB"]
                               [--presenter NAME] [--org "소속"] [--team "팀"] [--logo <file>] [--no-org]
 
 Two stores:
@@ -10,10 +10,14 @@ Two stores:
                 presenter, org (affiliation), team, logo. Asked once, the first time the plugin is used,
                 and reused in every project. The logo file is copied into the same folder.
                 org = "" means "no affiliation".
-  project       <project dir>/slides/identity.json. name, summary (one line saying what the project is),
+  project       <project root>/.informative-slides/identity.json. name, summary (one line saying what the project is),
                 color. Reused by every deck of the same project.
 
-Defaults: name = git repository top folder name, else the folder name; color = computed from the name.
+Project root: the top folder of the git repository that contains <project dir>; if it is not in a git
+repository, <project dir> itself. <project dir> defaults to the current folder. Every deck and working file
+of the skill goes in <project root>/.informative-slides/, one folder per repository, reported as out_dir.
+
+Defaults: name = project root folder name; color = computed from the name.
 The summary is written by the agent from the project's README or source material, not asked.
 
 Rules for the color: text in this color must be readable on white (contrast 4.5:1 or more), and
@@ -92,14 +96,16 @@ def color_from_name(name):
     return rgb_to_hex(tuple(c * 255 for c in colorsys.hls_to_rgb(hue / 360, 0.32, 0.62)))
 
 
-def default_name(project):
+def git_top(path):
     try:
-        top = subprocess.run(["git", "-C", str(project), "rev-parse", "--show-toplevel"],
+        top = subprocess.run(["git", "-C", str(path), "rev-parse", "--show-toplevel"],
                              capture_output=True, text=True, timeout=10).stdout.strip()
-        if top:
-            return pathlib.Path(top).name
+        return pathlib.Path(top) if top else None
     except (OSError, subprocess.TimeoutExpired):
-        pass
+        return None
+
+
+def default_name(project):
     return project.resolve().name
 
 
@@ -114,10 +120,13 @@ def data_uri(f):
 
 def main():
     args = sys.argv[1:]
-    if not args or args[0].startswith("--"):
+    if args and args[0] in ("-h", "--help"):
         print(__doc__)
-        sys.exit(2)
-    project = pathlib.Path(args[0])
+        sys.exit(0)
+    # 프로젝트 루트: 넘긴 폴더(없으면 현재 폴더)가 git 저장소 안이면 저장소 최상위 폴더, 아니면 그 폴더.
+    # 저장 폴더와 프로젝트 이름이 같은 기준을 쓰고, 저장소 하나에 저장 폴더가 하나만 생긴다
+    given = pathlib.Path(args[0] if args and not args[0].startswith("--") else ".").resolve()
+    project = git_top(given) or given
     opt = lambda k: args[args.index(k) + 1] if k in args and args.index(k) + 1 < len(args) else None
     notes = []
 
@@ -147,9 +156,22 @@ def main():
         home.mkdir(parents=True, exist_ok=True)
         pf.write_text(json.dumps(profile, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-    # project identity
-    f = project / "slides" / "identity.json"
-    data = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
+    # 저장 폴더: 이 스킬이 만드는 덱과 중간 파일은 모두 <project>/.informative-slides/에 둔다.
+    # 폴더 안의 .gitignore("*")가 폴더 전체를 git 추적에서 뺀다. 프로젝트의 .gitignore는 고치지 않는다.
+    out_dir = project / ".informative-slides"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    gi = out_dir / ".gitignore"
+    if not gi.exists():
+        gi.write_text("# informative-slides 저장물. 이 폴더 전체를 git이 추적하지 않는다\n*\n", encoding="utf-8")
+        notes.append(f"created {out_dir} (ignored by git)")
+
+    # project identity. 이전 위치(<project>/slides/identity.json)에 있으면 그 값을 이어 쓴다
+    f = out_dir / "identity.json"
+    legacy = project / "slides" / "identity.json"
+    src_f = f if f.exists() else legacy
+    data = json.loads(src_f.read_text(encoding="utf-8")) if src_f.exists() else {}
+    if src_f == legacy and legacy.exists():
+        notes.append(f"read the identity from the old location {legacy}; it is now kept in {f}")
     for key in ("name", "summary", "color"):
         if opt("--" + key) is not None:
             data[key] = opt("--" + key)
@@ -167,7 +189,7 @@ def main():
         ask.append("profile")
     if not keep.get("summary"):
         ask.append("summary")
-    out = {"project": dict(keep, file=str(f)), "profile": dict(profile or {}, file=str(pf)), "ask": ask, "notes": notes}
+    out = {"project": dict(keep, file=str(f)), "root": str(project), "out_dir": str(out_dir), "profile": dict(profile or {}, file=str(pf)), "ask": ask, "notes": notes}
     if profile and profile.get("logo"):
         lf = home / profile["logo"]
         if lf.exists():
