@@ -12,6 +12,10 @@ done is true also writes <deck>-feedback.done (an agent can wait on that file).
 GET /__ping returns "ok" so the page knows a server is present.
 GET /__pdf/<deck path>?lang=ko|en renders the deck to PDF with headless Chrome/Chromium/Edge
 (one slide per page, size from the deck's @page rule) and returns it as a download.
+POST /__save_local  {"deck": "<path>", "kind": "pdf"|"html", "lang", "ratio", "w"} writes the PDF into the deck's
+folder on the server computer (the HTML is the deck file itself) and returns {"path": ...}. The page uses it when the
+browser cannot write files itself (for example Orca, whose save picker creates an empty file and then blocks writing).
+Over ssh the file stays on the remote computer, next to the deck in the project.
 """
 import http.server
 import json
@@ -181,6 +185,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             body = f.read_bytes()
             self.send_response(200)
             self.send_header("Content-Type", "font/woff2")
+            # 글꼴 파일은 바뀌지 않는다. 한 번 받으면 다시 받지 않게 한다(ssh 포트 연결로 받으면 파일마다 시간이 걸린다)
+            self.send_header("Cache-Control", "public, max-age=31536000, immutable")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
@@ -210,6 +216,15 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             # 인쇄 보정: container-type:size가 있으면 Firefox가 인쇄할 때 SVG 글자를 그리지 않는다. 이전 템플릿으로 만든 덱에도 적용한다.
             # Firefox에서만 끈다. 다른 브라우저(검수 화면의 PDF를 만드는 Chrome 포함)에서 끄면 장 크기 단위가 쪽 전체 폭 기준이 되어 글자가 약 11% 커진다
             tag = f'<style id="review-fonts">{FONT_CSS}@media print{{@supports (-moz-appearance:none){{.slide{{container-type:normal!important}}}}}}</style>'
+            # 글꼴 굵기 다섯 개를 덱을 열 때 모두 받는다. 브라우저는 어떤 굵기를 처음 쓰는 장이 나올 때에야 그 파일을 받으므로,
+            # 받지 않은 굵기를 쓰는 장으로 넘어가면 파일을 받는 동안 그 글자가 사라졌다 나타난다(ssh 포트 연결에서 장을 넘길 때의 깜빡임)
+            tag += "".join(f'<link rel="preload" href="/__font/Pretendard-{n}.woff2" as="font" type="font/woff2" crossorigin>'
+                           for n in ("Regular", "Medium", "SemiBold", "Bold", "ExtraBold"))
+            tag += ('<script>document.fonts && [400, 500, 600, 700, 800].forEach(function (w) '
+                    '{ document.fonts.load(w + " 1em Pretendard") })</script>')
+            # 검수 화면 안의 덱은 장을 넘길 때 주소를 바꾸지 않는다. 검수 화면은 덱의 주소를 쓰지 않고,
+            # Electron 앱(예: Orca)은 주소가 바뀔 때마다 화면 전체가 검게 깜빡이는 경우가 있다. 이전 템플릿으로 만든 덱에도 적용한다
+            tag += '<script>history.replaceState = function () {}</script>'
             html = re.sub(r"(<head[^>]*>)", lambda m: m.group(1) + tag, html, count=1) if "<head" in html else tag + html
             body, ctype = html.encode("utf-8"), "text/html; charset=utf-8"
         else:
@@ -270,6 +285,33 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(body)
         return None
 
+    def _save_local(self):
+        """브라우저가 파일을 쓰지 못할 때(예: Orca) 서버가 덱 폴더에 PDF를 쓴다. HTML은 덱 파일 자체이므로 그 경로를 알린다.
+        ssh로 연결한 원격 서버이면 파일은 원격 컴퓨터의 프로젝트 안, 덱 옆에 생긴다. 같은 이름의 PDF는 새로 만든 것으로 바꾼다."""
+        data = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
+        rel = urllib.parse.unquote(data.get("deck", "")).lstrip("/")
+        deck = (ROOT / rel).resolve()
+        if ROOT not in deck.parents or deck.suffix not in (".html", ".htm") or not deck.exists():
+            return self._reply(400, b"bad deck path")
+        kind = data.get("kind")
+        if kind == "pdf":
+            body, err = self._render_pdf(rel, data.get("lang", "ko"), data.get("ratio", ""), str(data.get("w", "")))
+            if err:
+                return self._reply(500, err.encode())
+            lang = data.get("lang", "ko")
+            dest = deck.with_name(deck.stem + ("" if lang == "ko" else "-" + lang) + ".pdf")
+            dest.write_bytes(body)
+        elif kind == "html":
+            dest, body = deck, deck.read_bytes()
+        else:
+            return self._reply(400, b"bad kind")
+        out = json.dumps({"path": str(dest), "bytes": len(body)}, ensure_ascii=False).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.end_headers()
+        self.wfile.write(out)
+        return None
+
     def do_POST(self):
         """action: save (입력 중 저장), send (피드백 보내기: 지금까지의 의견을 기록 폴더로 옮기고 .sent를 만든다),
         done (검수 완료: send와 같이 옮기고 .done을 만든 뒤 서버를 종료한다)."""
@@ -290,6 +332,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(body)
             return None
+        if self.path == "/__save_local":
+            return self._save_local()
         if self.path != "/__feedback":
             return self._reply(404, b"not found")
         if FINISHED:

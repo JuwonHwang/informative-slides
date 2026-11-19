@@ -463,7 +463,21 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
   // ---- saving: Chrome·Edge ask where to save (the picker needs the click, so it opens before fetching).
   // Safari·Firefox have no picker; the browser's download setting decides.
   const stem = deckPath.split('/').pop().replace(/\.html?$/, '');
-  const saveFile = async (name, mime, ext, getBlob, busy) => {
+  // 브라우저가 파일을 쓰지 못하는 앱(Orca 같은 Electron 앱)에서는 서버가 덱 폴더에 쓴다(ssh로 연결했으면 원격 컴퓨터의 프로젝트 안).
+  // Orca의 저장 창은 고른 위치에 빈 파일(0바이트)을 먼저 만들고 쓰기를 막으므로, Electron이면 저장 창을 열지 않는다
+  const electron = /Electron\//.test(navigator.userAgent);
+  const saveLocal = async (local) => {
+    const r = await fetch('/__save_local', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deck: deckPath, ...local }) });
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  };
+  const saveFile = async (name, mime, ext, getBlob, busy, local) => {
+    if (electron && local) {
+      $('.status').textContent = busy;
+      try { const j = await saveLocal(local); $('.status').textContent = (local.kind === 'html' ? '덱 파일: ' : '') + j.path + (local.kind === 'html' ? ' (이 파일이 HTML이다)' : '에 저장했다'); }
+      catch (e) { $('.status').textContent = '저장 실패: ' + e.message; }
+      return;
+    }
     let handle = null;
     if (window.showSaveFilePicker) {
       try { handle = await showSaveFilePicker({ suggestedName: name, types: [{ description: ext, accept: { [mime]: [ext] } }] }); }
@@ -477,7 +491,15 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
       let fallback = false;
       if (handle) {
         try { const w = await handle.createWritable(); await w.write(blob); await w.close(); $('.status').textContent = handle.name + ' 저장됨'; return; }
-        catch (e) { fallback = true; }
+        catch (e) {
+          fallback = true;
+          // 고른 위치에 쓰지 못했다. 그 자리에는 빈 파일이 남는다. 서버가 덱 폴더에 쓴다
+          if (local) {
+            const j = await saveLocal(local);
+            $('.status').textContent = '이 앱이 고른 위치에 쓰기를 막아 ' + j.path + '에 저장했다. 고른 위치에 생긴 빈 파일(' + handle.name + ', 0바이트)은 지워도 된다';
+            return;
+          }
+        }
       }
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 60000);
@@ -485,7 +507,7 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
     } catch (e) { $('.status').textContent = '저장 실패: ' + e.message; }
   };
   $('.dl.html').onclick = () => saveFile(stem + '.html', 'text/html', '.html',
-    () => fetch(deckPath, { cache: 'no-store' }).then((r) => r.blob()), 'HTML 저장 중');
+    () => fetch(deckPath, { cache: 'no-store' }).then((r) => r.blob()), 'HTML 저장 중', { kind: 'html' });
   // PDF는 서버가 Chrome·Chromium·Edge로 만든다(쪽 크기를 정확히 맞춘다). 서버 컴퓨터에 브라우저가 없으면(예: ssh 원격 서버)
   // 사용자 브라우저의 인쇄 창으로 저장한다. 인쇄에도 단계별 쪽, 글꼴, 고른 비율·가로 길이가 적용된다.
   let serverPdf = true;
@@ -507,7 +529,7 @@ body.finished .pick,body.finished .items,body.finished .note,body.finished .slid
     saveFile(stem + (lang === 'ko' ? '' : '-' + lang) + '.pdf', 'application/pdf', '.pdf', () => fetch('/__pdf' + deckPath + '?' + q).then((r) => {
       if (!r.ok) return r.text().then((t) => { throw new Error(t); });
       return r.blob();
-    }), 'PDF 만드는 중');
+    }), 'PDF 만드는 중', { kind: 'pdf', lang, ratio: ratioStr(), w: String(pdfWidthIn()) });
   };
 
   $('.send').onclick = () => { clearTimeout(saveT); push('send').then((ok) => { if (ok) { db = {}; cur = -1; } }); };

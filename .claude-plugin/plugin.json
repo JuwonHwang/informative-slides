@@ -1,6 +1,6 @@
 {
   "name": "informative-slides",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "발표자 없이 읽어도 이해되는 자료를 문서→HTML 슬라이드 순으로 만드는 스킬(informative-slides), 요소별 검수 화면(slide-review), 연구 프로젝트 진행 스킬(goal, meet, wrapup)",
   "author": {
     "name": "JuwonHwang"
