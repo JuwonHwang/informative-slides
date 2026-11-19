@@ -674,9 +674,8 @@ function show(i, k = 1) {
   fitUnits(slides[cur])
   if (forward) animateStep(slides[cur], before)
   counter.textContent = (cur + 1) + ' / ' + slides.length + (n > 1 ? ' · ' + step + '/' + n : '')
-  // 주소 끝에 장 번호를 남겨 다시 열면 같은 장이 보이게 한다. 다른 화면(검수 화면) 안에 들어 있으면 남기지 않는다.
-  // Electron 앱(예: Orca)은 주소가 바뀔 때마다 앱에 알리는데, 그때 화면 전체가 검게 깜빡이는 앱이 있다
-  if (window.self === window.top) try { history.replaceState(null, '', location.search + '#' + (cur + 1)) } catch {}
+  // 장을 넘길 때 주소(#번호)를 바꾸지 않는다. Electron 앱(예: Orca)은 주소가 바뀔 때마다 화면 전체를 다시 그려 검게 깜빡인다.
+  // 처음 열 때 주소에 #번호가 있으면 그 장부터 보인다
 }
 const next = () => step < stepsOf(slides[cur]) ? show(cur, step + 1) : show(cur + 1, 1)
 const prev = () => step > 1 ? show(cur, step - 1) : show(cur - 1, 'last')

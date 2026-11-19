@@ -228,9 +228,9 @@ python3 <플러그인 폴더>/skills/informative-slides/scripts/check_deck.py <�
 - 같은 대상을 그린 그림들이 배치, 이름, 색, 예시 값에서 같은가. 부분을 설명하는 장마다 그 부분이 전체 그림의 어디인지 보이는가.
 - 모든 제목, 메시지, 불릿의 지표 단어마다 무엇의 지표인지, 이름과 기호마다 무엇인지 그 장에 있는가.
 - 움직이는 단계마다 무엇이 어디서 어디로 왜 움직이는지 단계 설명에 있는가.
-- 장마다 캡처해 잘림, 겹침, 의도하지 않은 줄바꿈, 화살표가 상자를 가로지르는지 본다.
+- 장마다 캡처해 잘림, 겹침, 의도하지 않은 줄바꿈, 화살표가 상자를 가로지르는지 본다. Chrome은 키체인을 쓰지 않게 `--use-mock-keychain --password-store=basic`을 붙여 띄운다.
 
 ```bash
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars \
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --hide-scrollbars --use-mock-keychain --password-store=basic \
   --window-size=1600,900 --screenshot="$PWD/.informative-slides/preview/slide-3.png" "file://$PWD/.informative-slides/deck.html#3"
 ```
